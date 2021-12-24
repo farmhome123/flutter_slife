@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_contron/models/datauserlogin.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_contron/services/api.dart';
@@ -24,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
     };
 
     try {
-      var bodyEncoded = json.encode(eiei);
+      var bodyEncoded = json.encode(userData);
       var response = await CallAPI().loginAPI(bodyEncoded);
       var body = json.decode(response.body);
       _dataUser = dataUserFromJson(response.body);
@@ -36,7 +37,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       sharedPreferences.setInt('appStep', 1);
       sharedPreferences.setString('userId', '${_dataUser?.message[0].userId}');
-
+      SpinKitFadingCircle(
+        duration: Duration(milliseconds: 2000),
+        color: Colors.blue,
+        size: 50.0,
+      );
       // sharedPreferences.setInt('userId', value)
       Navigator.pushNamed(context, '/home');
     } catch (error) {

@@ -136,7 +136,7 @@ class _DashBoardState extends State<DashBoard> {
   Widget build(BuildContext context) {
     if (_datasocket == null) {
       return Center(
-        child: SpinKitFadingCube(
+        child: SpinKitFadingCircle(
           duration: Duration(milliseconds: 2000),
           color: Colors.blue,
           size: 50.0,
@@ -174,25 +174,24 @@ class _DashBoardState extends State<DashBoard> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Image.asset(
                       'assets/images/iconhome1.png',
                       fit: BoxFit.fitHeight,
                       height: 100,
                     ),
-                    // Text(
-                    //   '°',
-                    //   style: TextStyle(
-                    //     fontSize: 70.0,
-                    //     letterSpacing: -6,
-                    //     foreground: Paint()
-                    //       ..strokeWidth = 5
-                    //       ..color = Colors.blue[400]!,
-                    //   ),
-                    // ),
                     Text(
                       '${_datasocket?.temperature}',
+                      style: TextStyle(
+                        fontSize: 70.0,
+                        letterSpacing: -6,
+                        foreground: Paint()
+                          ..strokeWidth = 5
+                          ..color = Colors.blue[400]!,
+                      ),
+                    ),
+                    Text(
+                      ' °C',
                       style: TextStyle(
                         fontSize: 70.0,
                         letterSpacing: -6,

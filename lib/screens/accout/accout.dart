@@ -72,9 +72,9 @@ class _AccoutScreenState extends State<AccoutScreen> {
                         height: 20,
                       ),
                       Text(
-                        'Profile',
+                        'ข้อมูลผู้ใช้',
                         style: TextStyle(
-                            fontSize: 30,
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.white),
                       ),
@@ -105,7 +105,7 @@ class _AccoutScreenState extends State<AccoutScreen> {
                                     child: Row(
                                       children: [
                                         Text(
-                                          'ข้อมูลผู้ใช้: ',
+                                          'ชื่อผู้ใช้: ',
                                           style: kProfileStyle,
                                         ),
                                         Text(
@@ -206,29 +206,29 @@ class _AccoutScreenState extends State<AccoutScreen> {
                                   ),
                                 ),
                                 Divider(height: 10, thickness: 1.5),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 20.0),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        'เข้าสู่ระบบล่าสุด: ',
-                                        style: kProfileStyle,
-                                      ),
-                                      Text(
-                                        DateFormat('วันที่ ' +
-                                                'dd-MM-yyyy' +
-                                                ' น.')
-                                            .format(
-                                          DateTime.now(),
-                                        ),
-                                        style: kProfileStyle,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Divider(height: 10, thickness: 1.5),
+                                // Padding(
+                                //   padding: const EdgeInsets.symmetric(
+                                //       vertical: 20.0),
+                                //   child: Row(
+                                //     crossAxisAlignment: CrossAxisAlignment.end,
+                                //     children: [
+                                //       Text(
+                                //         'เข้าสู่ระบบล่าสุด: ',
+                                //         style: kProfileStyle,
+                                //       ),
+                                //       Text(
+                                //         DateFormat('วันที่ ' +
+                                //                 'dd-MM-yyyy' +
+                                //                 ' น.')
+                                //             .format(
+                                //           DateTime.now(),
+                                //         ),
+                                //         style: kProfileStyle,
+                                //       ),
+                                //     ],
+                                //   ),
+                                // ),
+                                // Divider(height: 10, thickness: 1.5),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 20.0),
@@ -413,7 +413,7 @@ class _AccoutScreenState extends State<AccoutScreen> {
       return Scaffold(
         backgroundColor: Colors.blue[50],
         body: Center(
-          child: SpinKitFadingCube(
+          child: SpinKitFadingCircle(
             duration: Duration(milliseconds: 2000),
             color: Colors.blue,
             size: 50.0,

@@ -352,7 +352,7 @@ class _EditAccoutScreenState extends State<EditAccoutScreen> {
       return Scaffold(
         backgroundColor: Colors.blue[50],
         body: Center(
-          child: SpinKitFadingCube(
+          child: SpinKitFadingCircle(
             duration: Duration(milliseconds: 2000),
             color: Colors.blue,
             size: 50.0,

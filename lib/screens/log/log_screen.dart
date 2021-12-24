@@ -67,7 +67,6 @@ class _LogScreenState extends State<LogScreen> {
             SizedBox(
               height: 50,
             ),
-            
             Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
@@ -96,7 +95,7 @@ class _LogScreenState extends State<LogScreen> {
               child: Column(
                 children: <Widget>[
                   Text(
-                    'ข้อมูล Log',
+                    'ข้อมูลย้อนหลัง',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   _datalog?.message.length != null
@@ -141,7 +140,7 @@ class _LogScreenState extends State<LogScreen> {
                                       child: Row(
                                         children: [
                                           Text(
-                                            'Temp avg =  ',
+                                            'อุณหภูมิเฉลี่ย  ',
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
@@ -156,6 +155,14 @@ class _LogScreenState extends State<LogScreen> {
                                               color: Color(0xFF493a3a),
                                             ),
                                           ),
+                                          Text(
+                                            ' °C',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF493a3a),
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -165,7 +172,7 @@ class _LogScreenState extends State<LogScreen> {
                                       child: Row(
                                         children: [
                                           Text(
-                                            'Count = ',
+                                            'จำนวนการทำงาน  ',
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
@@ -180,6 +187,14 @@ class _LogScreenState extends State<LogScreen> {
                                               color: Color(0xFF493a3a),
                                             ),
                                           ),
+                                          Text(
+                                            '  ครั้ง',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF493a3a),
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -188,14 +203,14 @@ class _LogScreenState extends State<LogScreen> {
                                           vertical: 10, horizontal: 30),
                                       child: Row(
                                         children: [
-                                          Text(
-                                            'Time log = ',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF493a3a),
-                                            ),
-                                          ),
+                                          // Text(
+                                          //   'Time log = ',
+                                          //   style: TextStyle(
+                                          //     fontSize: 16,
+                                          //     fontWeight: FontWeight.bold,
+                                          //     color: Color(0xFF493a3a),
+                                          //   ),
+                                          // ),
                                           // Text(
                                           //   '${_datalog[index]['datalog_time']}',
                                           //   style: TextStyle(
@@ -231,7 +246,7 @@ class _LogScreenState extends State<LogScreen> {
                               height: 120,
                             ),
                             Center(
-                              child: SpinKitFadingCube(
+                              child: SpinKitFadingCircle(
                                 duration: Duration(milliseconds: 2000),
                                 color: Colors.blue,
                                 size: 50.0,
