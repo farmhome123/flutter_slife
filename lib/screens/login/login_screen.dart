@@ -104,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
           height: 60.0,
           child: TextField(
             obscureText: true,
-            keyboardType: TextInputType.number,
+            keyboardType: TextInputType.text,
             onChanged: (value) {
               setState(() {
                 this._password = value;

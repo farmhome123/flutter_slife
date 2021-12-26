@@ -183,8 +183,8 @@ class _DashBoardState extends State<DashBoard> {
                     Text(
                       '${_datasocket?.temperature}',
                       style: TextStyle(
-                        fontSize: 70.0,
-                        letterSpacing: -6,
+                        fontSize: 50.0,
+                        letterSpacing: -4,
                         foreground: Paint()
                           ..strokeWidth = 5
                           ..color = Colors.blue[400]!,
@@ -193,7 +193,7 @@ class _DashBoardState extends State<DashBoard> {
                     Text(
                       ' °C',
                       style: TextStyle(
-                        fontSize: 70.0,
+                        fontSize: 50.0,
                         letterSpacing: -6,
                         foreground: Paint()
                           ..strokeWidth = 5

@@ -1,7 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_contron/models/dataday.dart';
 import 'package:flutter_contron/models/datalog.dart';
+import 'package:flutter_contron/models/datalogid.dart';
+
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,10 +19,29 @@ class LogScreen extends StatefulWidget {
   _LogScreenState createState() => _LogScreenState();
 }
 
+class Debouncer {
+  final int milliseconds;
+  VoidCallback? action;
+  Timer? _timer;
+
+  Debouncer({required this.milliseconds});
+
+  run(VoidCallback action) {
+    if (null != _timer) {
+      _timer!.cancel();
+    }
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
+}
+
 class _LogScreenState extends State<LogScreen> {
+  final _debouncer = Debouncer(milliseconds: 500);
   DateTime selectedDate = DateTime.now();
   DataLog? _datalog;
-  // List? _dataDay;
+  DataDay? _dataDay;
+  String? _myStateDay;
+  List filteredUsers = [];
+  DataLogId? _dataLogId;
   // String? _myStateDay = _datalog?.message[0].datalogTime;
   Future<void> getuser() async {
     String? iduser;
@@ -31,24 +55,18 @@ class _LogScreenState extends State<LogScreen> {
       _datalog = dataLogFromJson(res.body);
       iduser = prefs.getString('userId');
     });
-    print(_datalog!.message);
-    // print(_datalog!.message[0].userId);
-    // print('iduser = ${iduser}');
-    // print('index = ${_datalog!.message.length}');
   }
 
-  _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate, // Refer step 1
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2025),
-    );
-    if (picked != null && picked != selectedDate)
-      setState(() {
-        selectedDate = picked;
-      });
+  getdataLogId(logId) async {
+    var res = await http
+        .get(Uri.parse('https://sttslife-api.sttslife.co/datalog/1/' + logId));
+    setState(() {
+      _dataLogId = dataLogIdFromJson(res.body);
+    });
+    print(_dataLogId!.message[0].datalogTime);
   }
+
+  searchdata() {}
 
   @override
   void initState() {
@@ -67,42 +85,88 @@ class _LogScreenState extends State<LogScreen> {
             SizedBox(
               height: 50,
             ),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text(
-                  "${selectedDate.toLocal()}".split(' ')[0],
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(
-                  height: 20.0,
-                ),
-                RaisedButton(
-                  onPressed: () => _selectDate(context), // Refer step 3
-                  child: Text(
-                    'เลือกวันที่',
-                    style: TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.bold),
-                  ),
-                  color: Colors.blue[400],
-                ),
-              ],
+            Text(
+              'ข้อมูลย้อนหลัง',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            SizedBox(
+              height: 30,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                padding: EdgeInsets.only(left: 15, right: 15, top: 5),
+                color: Colors.white,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        color: Colors.green[200],
+                        child: DropdownButtonHideUnderline(
+                          child: ButtonTheme(
+                            alignedDropdown: true,
+                            child: DropdownButton<String>(
+                              dropdownColor: Colors.green[50],
+                              borderRadius: BorderRadius.circular(20),
+                              autofocus: true,
+                              iconEnabledColor: Colors.green,
+                              value: _myStateDay,
+                              iconSize: 30,
+                              icon: (null),
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 16,
+                              ),
+                              hint: Text(
+                                'เลือกวันที่ข้อมูล',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              onChanged: (newValue) {
+                                _debouncer.run(() {
+                                  setState(() {
+                                    _myStateDay = newValue;
+                                    getdataLogId(newValue);
+                                    print(_myStateDay);
+                                  });
+                                });
+                              },
+                              items: _datalog?.message.map((item) {
+                                    return new DropdownMenuItem(
+                                      child: new Text(
+                                        DateFormat('วันที่ ' +
+                                                'dd-MM-yyyy' +
+                                                ' น.')
+                                            .format(item.datalogTime),
+                                      ),
+                                      value: item.datalogId.toString(),
+                                    );
+                                  })?.toList() ??
+                                  [],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            //////////////////////////////drop Type //////////////////////////
+
             SizedBox(
               height: 20,
             ),
             Center(
               child: Column(
                 children: <Widget>[
-                  Text(
-                    'ข้อมูลย้อนหลัง',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
                   _datalog?.message.length != null
                       ? ListView.builder(
                           physics: NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
-                          itemCount: _datalog!.message.length,
+                          itemCount: _dataLogId != null
+                              ? _dataLogId!.message.length
+                              : 0,
                           itemBuilder: (context, index) {
                             return Padding(
                               padding: const EdgeInsets.all(12.0),
@@ -148,7 +212,7 @@ class _LogScreenState extends State<LogScreen> {
                                             ),
                                           ),
                                           Text(
-                                            '${_datalog?.message[index].datalogTempavg}',
+                                            '${_dataLogId?.message[0].datalogTempavg}',
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
@@ -180,7 +244,8 @@ class _LogScreenState extends State<LogScreen> {
                                             ),
                                           ),
                                           Text(
-                                            '${_datalog?.message[index].datalogCount}',
+                                            '${_dataLogId?.message[0].datalogCount}',
+                                            // '${filteredUsers[0]['datalogCount']}',
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
@@ -203,28 +268,14 @@ class _LogScreenState extends State<LogScreen> {
                                           vertical: 10, horizontal: 30),
                                       child: Row(
                                         children: [
-                                          // Text(
-                                          //   'Time log = ',
-                                          //   style: TextStyle(
-                                          //     fontSize: 16,
-                                          //     fontWeight: FontWeight.bold,
-                                          //     color: Color(0xFF493a3a),
-                                          //   ),
-                                          // ),
-                                          // Text(
-                                          //   '${_datalog[index]['datalog_time']}',
-                                          //   style: TextStyle(
-                                          //     fontSize: 16,
-                                          //     fontWeight: FontWeight.bold,
-                                          //     color: Color(0xFF493a3a),
-                                          //   ),
-                                          // ),
                                           Text(
                                             DateFormat('วันที่ ' +
                                                     'dd-MM-yyyy' +
                                                     ' น.')
-                                                .format(_datalog!.message[index]
-                                                    .datalogTime),
+                                                .format(_dataLogId != null
+                                                    ? _dataLogId!
+                                                        .message[0].datalogTime
+                                                    : DateTime.now()),
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
