@@ -177,17 +177,36 @@ class _DashBoardState extends State<DashBoard> {
     });
     //listen for incoming messages from the Server.
     socket!.on('newChatMessage', (data) {
-      // print(data); //
-      setState(() {
-        _message = data;
-        _datasocket = DataSocket.fromJson(jsonDecode(data));
-      });
+      if ((data.toString()).indexOf('user_id') != -1) {
+        setState(() {
+          _message = data;
+          _datasocket = DataSocket.fromJson(jsonDecode(data));
+        });
+      } else if ((data.toString()).indexOf('senderId') != -1) {
+        final str = data.toString();
+        final commands = str.substring(str.indexOf(':') + 2, str.indexOf(','));
+        final atcommands = commands.substring(0, commands.indexOf('='));
+        final values =
+            commands.substring(commands.indexOf('=') + 1, commands.length);
+        if (atcommands.indexOf('AT+TOGGLE') != -1) {
+          print('############ AT+TOGGLE');
+          setState(() {
+            status = (int.parse(values) == 0 ? false : true) ; 
+          });
+        }
+        //  else if (atcommands.indexOf('AT+MODE') != -1) {
+        //   // เปลี่ยนโหมด
+        // }
+        print('atcommands = ${atcommands} & values = ${values}');
+      }
+
       // print(_datasocket);
       // print(_setledgreen);
     });
-    socket!.on('message', (data) {
-      print(data); //
-    });
+
+    // socket!.on('message', (data) {
+    //   print(data); //
+    // });
 
     //listens when the client is disconnected from the Server
     socket!.on('disconnect', (data) {
@@ -331,7 +350,7 @@ class _DashBoardState extends State<DashBoard> {
                 status = val;
                 print(status);
                 // sendMessage(status.toString());
-                sendMessage('AT+TOGLE=${status ? 1 : 0}');
+                sendMessage('AT+TOGGLE=${status ? 1 : 0}');
               });
               sendStatus();
             },

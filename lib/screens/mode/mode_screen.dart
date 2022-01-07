@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_contron/models/datamode.dart';
+import 'package:flutter_contron/models/datasocketio.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart';
@@ -23,11 +24,14 @@ class _ModeScreenState extends State<ModeScreen> {
   String? _Textmode = 'default';
   int checkedIndex = 0;
   String? user_modes;
+  DataSocket? _datasocket;
+  String? _message;
+  bool status = false;
 // /#RT=user_id,modes_id$
   getMode() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     iduser = prefs.getString('userId');
-    user_modes = prefs.getString('user_modes');
+    // user_modes = prefs.getString('user_modes');
     print('iduser = ${iduser}');
     var res = await http.get(Uri.parse(
         'https://sttslife-api.sttslife.co/config/' + iduser.toString()));
@@ -36,14 +40,38 @@ class _ModeScreenState extends State<ModeScreen> {
       if (res.statusCode == 200)
         setState(() {
           _dataModes = dataModesFromJson(res.body);
-          checkedIndex = int.parse(user_modes.toString());
+          // checkedIndex = int.parse(user_modes.toString());
         });
       _dataModesList = _dataModes?.message as List<Message>;
       // print(json.encode(_dataModes));
       print(_dataModesList);
-      print('https://sttslife-api.sttslife.co/config/' + iduser.toString());
+      getUser(iduser);
     } catch (e) {
-      throw e;
+      print(e);
+    }
+  }
+
+  getUser(id) async {
+    print('444444444444${id}');
+    var res = await http.get(
+        Uri.parse('https://sttslife-api.sttslife.co/users/' + id.toString()));
+    final indexuser_modes = res.body.indexOf('user_modes');
+    final indexEnduser_modes = res.body.indexOf('}', indexuser_modes);
+    final index_user_modes = res.body.indexOf(':', indexuser_modes + 5) + 1;
+    final user_modes = res.body.substring(index_user_modes, indexEnduser_modes);
+
+    print(user_modes);
+    // _dataModesList.map((data)=>{
+    //   print(data)
+    // });
+    for (var i = 0; i < _dataModesList.length; i++) {
+      print(_dataModesList[i].configId);
+      if (int.parse(user_modes) == _dataModesList[i].configId) {
+        setState(() {
+          checkedIndex = i;
+        });
+        break;
+      }
     }
   }
 
@@ -105,13 +133,47 @@ class _ModeScreenState extends State<ModeScreen> {
       print(data); //
     });
 
+    socket!.on('newChatMessage', (data) {
+      if ((data.toString()).indexOf('user_id') != -1) {
+        setState(() {
+          _message = data;
+          _datasocket = DataSocket.fromJson(jsonDecode(data));
+        });
+      } else if ((data.toString()).indexOf('senderId') != -1) {
+        final str = data.toString();
+        final commands = str.substring(str.indexOf(':') + 2, str.indexOf(','));
+        final atcommands = commands.substring(0, commands.indexOf('='));
+        final config_id = commands.substring(
+            commands.indexOf('=') + 1, commands.indexOf('|'));
+        final values =
+            commands.substring(commands.indexOf('|') + 1, commands.length);
+        // if (atcommands.indexOf('AT+TOGGLE') != -1) {
+        //   setState(() {
+        //     status = (int.parse(values) == 0 ? false : true);
+        //   });
+        // }
+        if (atcommands.indexOf('AT+MODE') != -1) {
+          // เปลี่ยนโหมด
+          print('เปลี่ยนโหมด ${values} config_id ${config_id}');
+          setState(() {
+            checkedIndex = int.parse(values);
+          });
+          sendUserMode(config_id);
+        }
+        print('atcommands = ${atcommands} & values = ${values}');
+      }
+
+      // print(_datasocket);
+      // print(_setledgreen);
+    });
+
     //listens when the client is disconnected from the Server
     socket!.on('disconnect', (data) {
       print('disconnect');
     });
   }
 
-  Future sendUserMode(idMode) async {
+  sendUserMode(idMode) async {
     final body = {'user_modes': idMode.toString()};
     var res = await http.put(
         Uri.parse(
@@ -188,8 +250,8 @@ class _ModeScreenState extends State<ModeScreen> {
                                     'ตั้งค่าโหมดเป็น: #RT=${_dataModesList[index].configId}\$');
                                 // sendMessage(
                                 //     '#RT=${_dataModesList[index].configId}\$');
-                                 sendMessage(
-                                    'AT+MODE=${_dataModesList[index].configId}');
+                                sendMessage(
+                                    'AT+MODE=${_dataModesList[index].configId}|${index}');
                                 sendUserMode(_dataModesList[index].configId);
                                 //////put api
                                 ///
@@ -198,8 +260,8 @@ class _ModeScreenState extends State<ModeScreen> {
                                       .configName
                                       .toString();
                                   checkedIndex = index;
-                                  prefs.setString(
-                                      'user_modes', index.toString());
+                                  // prefs.setString(
+                                  //     'user_modes', index.toString());
                                 });
                                 print(checkedIndex);
                               },
