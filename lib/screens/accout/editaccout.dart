@@ -110,7 +110,8 @@ class _EditAccoutScreenState extends State<EditAccoutScreen> {
         body: userDataEdit);
     print(json.decode(res.body));
     print(userDataEdit);
-    Navigator.pop(context);
+    // Navigator.pop(context,true);
+    Navigator.pushNamed(context, '/home');
   }
 
   Future<void> getBrands() async {

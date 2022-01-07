@@ -31,6 +31,7 @@ class _AccoutScreenState extends State<AccoutScreen> {
   String? iduser;
   File? _image;
   String? name_flie;
+  bool? aa = false;
   final picker = ImagePicker();
   final f = new DateFormat('yyyy-MM-dd');
   Future getImage(ImageSource imageSource) async {
@@ -124,6 +125,7 @@ class _AccoutScreenState extends State<AccoutScreen> {
   Widget build(BuildContext context) {
     if (_dataUser != null) {
       getDataTime();
+
       return Container(
         child: Stack(
           children: [
@@ -135,6 +137,7 @@ class _AccoutScreenState extends State<AccoutScreen> {
                       SizedBox(
                         height: 20,
                       ),
+
                       Text(
                         'ข้อมูลผู้ใช้',
                         style: TextStyle(
@@ -149,29 +152,61 @@ class _AccoutScreenState extends State<AccoutScreen> {
                       Center(
                         child: Stack(
                           children: [
+                            // Container(
+                            //   width: 130,
+                            //   height: 130,
+                            //   decoration: BoxDecoration(
+                            //     border: Border.all(
+                            //         width: 4,
+                            //         color: Theme.of(context)
+                            //             .scaffoldBackgroundColor),
+                            //     boxShadow: [
+                            //       BoxShadow(
+                            //           spreadRadius: 2,
+                            //           blurRadius: 10,
+                            //           color: Colors.black.withOpacity(0.1),
+                            //           offset: Offset(0, 10))
+                            //     ],
+                            //     shape: BoxShape.circle,
+                            //     image: DecorationImage(
+                            //       image: imgVariable,
+                            //       fit: BoxFit.cover,
+                            //     ),
+                            //   ),
+                            // ),
                             Container(
-                              width: 130,
-                              height: 130,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                    width: 4,
-                                    color: Theme.of(context)
-                                        .scaffoldBackgroundColor),
-                                boxShadow: [
-                                  BoxShadow(
-                                      spreadRadius: 2,
-                                      blurRadius: 10,
-                                      color: Colors.black.withOpacity(0.1),
-                                      offset: Offset(0, 10))
-                                ],
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
+                              // decoration: BoxDecoration(
+                              //   border: Border.all(
+                              //       width: 4,
+                              //       color: Theme.of(context)
+                              //           .scaffoldBackgroundColor),
+                              //   boxShadow: [
+                              //     BoxShadow(
+                              //         spreadRadius: 2,
+                              //         blurRadius: 10,
+                              //         color: Colors.black.withOpacity(0.1),
+                              //         offset: Offset(0, 10))
+                              //   ],
+                              //   shape: BoxShape.circle,
+
+                              // ),
+
+                              child: Image.network(
+                                'https://sttslife-api.sttslife.co/images/${iduser}.png',
+                                height: 130,
+                                width: 130,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, exception, stackTrace) {
+                                  return Image.asset(
+                                    'assets/images/logo.png',
                                     fit: BoxFit.cover,
-                                    image: NetworkImage(
-                                      "https://sttslife-api.sttslife.co/images/${iduser}.png",
-                                    )),
+                                    height: 130,
+                                    width: 130,
+                                  );
+                                },
                               ),
                             ),
+
                             Positioned(
                                 bottom: 0,
                                 right: 0,

@@ -52,7 +52,6 @@ class _ModeScreenState extends State<ModeScreen> {
   }
 
   getUser(id) async {
-    print('444444444444${id}');
     var res = await http.get(
         Uri.parse('https://sttslife-api.sttslife.co/users/' + id.toString()));
     final indexuser_modes = res.body.indexOf('user_modes');

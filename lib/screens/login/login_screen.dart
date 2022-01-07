@@ -19,14 +19,14 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _username, _password;
   DataUser? _dataUser;
   void _loginProcess(userData) async {
-    try {
-      var bodyEncoded = json.encode(userData);
-      var response = await CallAPI().loginAPI(bodyEncoded);
-      var body = json.decode(response.body);
-      _dataUser = dataUserFromJson(response.body);
-      // print(response.body);
-      print(_dataUser);
-      print(_dataUser?.message?[0].userId);
+    var bodyEncoded = json.encode(userData);
+    var response = await CallAPI().loginAPI(bodyEncoded);
+    var body = json.decode(response.body);
+    _dataUser = dataUserFromJson(response.body);
+    print('${_dataUser}');
+    if (_dataUser?.status == false) {
+      _showDialog('มีข้อผิดพลาด', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+    } else {
       SharedPreferences sharedPreferences =
           await SharedPreferences.getInstance();
       sharedPreferences.setInt('appStep', 1);
@@ -44,8 +44,6 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       // sharedPreferences.setInt('userId', value)
       Navigator.pushNamed(context, '/home');
-    } catch (error) {
-      print(error);
     }
   }
 
@@ -202,5 +200,23 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
           ),
         ));
+  }
+
+  void _showDialog(title, msg) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(msg),
+            actions: [
+              FlatButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Close'))
+            ],
+          );
+        });
   }
 }
