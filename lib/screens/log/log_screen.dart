@@ -50,23 +50,32 @@ class _LogScreenState extends State<LogScreen> {
         "https://sttslife-api.sttslife.co/datalog/" +
             prefs.getString('userId').toString()));
     // var data = json.decode(res.body);
-
-    setState(() {
-      _datalog = dataLogFromJson(res.body);
-      iduser = prefs.getString('userId');
-    });
+    try {
+      if (res.statusCode == 200)
+        setState(() {
+          _datalog = dataLogFromJson(res.body);
+          iduser = prefs.getString('userId');
+        });
+    } catch (e) {
+      throw e;
+    }
   }
 
   getdataLogId(logId) async {
     var res = await http
         .get(Uri.parse('https://sttslife-api.sttslife.co/datalog/1/' + logId));
-    setState(() {
-      _dataLogId = dataLogIdFromJson(res.body);
-    });
+
+    try {
+      if (res.statusCode == 200)
+        setState(() {
+          _dataLogId = dataLogIdFromJson(res.body);
+        });
+    } catch (e) {
+      throw e;
+    }
+
     print(_dataLogId!.message[0].datalogTime);
   }
-
-  searchdata() {}
 
   @override
   void initState() {
@@ -77,240 +86,230 @@ class _LogScreenState extends State<LogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        physics: ScrollPhysics(),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 50,
-            ),
-            Text(
-              'ข้อมูลย้อนหลัง',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-              height: 30,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                padding: EdgeInsets.only(left: 15, right: 15, top: 5),
-                color: Colors.white,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        color: Colors.green[200],
-                        child: DropdownButtonHideUnderline(
-                          child: ButtonTheme(
-                            alignedDropdown: true,
-                            child: DropdownButton<String>(
-                              dropdownColor: Colors.green[50],
-                              borderRadius: BorderRadius.circular(20),
-                              autofocus: true,
-                              iconEnabledColor: Colors.green,
-                              value: _myStateDay,
-                              iconSize: 30,
-                              icon: (null),
-                              style: TextStyle(
-                                color: Colors.black54,
-                                fontSize: 16,
-                              ),
-                              hint: Text(
-                                'เลือกวันที่ข้อมูล',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              onChanged: (newValue) {
-                                _debouncer.run(() {
-                                  setState(() {
-                                    _myStateDay = newValue;
-                                    getdataLogId(newValue);
-                                    print(_myStateDay);
-                                  });
-                                });
-                              },
-                              items: _datalog?.message.map((item) {
-                                    return new DropdownMenuItem(
-                                      child: new Text(
-                                        DateFormat('วันที่ ' +
-                                                'dd-MM-yyyy' +
-                                                ' น.')
-                                            .format(item.datalogTime),
-                                      ),
-                                      value: item.datalogId.toString(),
-                                    );
-                                  })?.toList() ??
-                                  [],
-                            ),
+    return Column(
+      children: [
+        SizedBox(
+          height: 30,
+        ),
+        Text(
+          'ข้อมูลย้อนหลัง',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(
+          height: 30,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            padding: EdgeInsets.only(left: 15, right: 15, top: 5),
+            color: Colors.white,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    color: Colors.green[200],
+                    child: DropdownButtonHideUnderline(
+                      child: ButtonTheme(
+                        alignedDropdown: true,
+                        child: DropdownButton<String>(
+                          dropdownColor: Colors.green[50],
+                          borderRadius: BorderRadius.circular(20),
+                          autofocus: true,
+                          iconEnabledColor: Colors.green,
+                          value: _myStateDay,
+                          iconSize: 30,
+                          icon: (null),
+                          style: TextStyle(
+                            color: Colors.black54,
+                            fontSize: 16,
                           ),
+                          hint: Text(
+                            'เลือกวันที่ข้อมูล',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onChanged: (newValue) {
+                            _debouncer.run(() {
+                              setState(() {
+                                _myStateDay = newValue;
+                                getdataLogId(newValue);
+                                print(_myStateDay);
+                              });
+                            });
+                          },
+                          items: _datalog?.message.map((item) {
+                                return new DropdownMenuItem(
+                                  child: new Text(
+                                    DateFormat('วันที่ ' + 'dd-MM-yyyy' + ' น.')
+                                        .format(item.datalogTime),
+                                  ),
+                                  value: item.datalogId.toString(),
+                                );
+                              })?.toList() ??
+                              [],
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-            //////////////////////////////drop Type //////////////////////////
+          ),
+        ),
+        //////////////////////////////drop Type //////////////////////////
 
-            SizedBox(
-              height: 20,
-            ),
-            Center(
-              child: Column(
-                children: <Widget>[
-                  _datalog?.message.length != null
-                      ? ListView.builder(
-                          physics: NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: _dataLogId != null
-                              ? _dataLogId!.message.length
-                              : 0,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Container(
-                                height: MediaQuery.of(context).size.height / 5,
-                                width: MediaQuery.of(context).size.width * 0.9,
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    border:
-                                        Border.all(color: Color(0xFFF105BCF)),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            Color(0xFF105BCF).withOpacity(0.4),
-                                        spreadRadius: 4,
-                                        blurRadius: 7,
-                                        offset: Offset(
-                                            0, 3), // changes position of shadow
+        SizedBox(
+          height: 20,
+        ),
+        Center(
+          child: Column(
+            children: <Widget>[
+              _datalog?.message.length != null
+                  ? ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount:
+                          _dataLogId != null ? _dataLogId!.message.length : 0,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Container(
+                            height: MediaQuery.of(context).size.height / 4,
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(color: Colors.green[400]!),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.green[400]!.withOpacity(0.4),
+                                    spreadRadius: 4,
+                                    blurRadius: 7,
+                                    offset: Offset(
+                                        0, 3), // changes position of shadow
+                                  ),
+                                ],
+                                borderRadius: new BorderRadius.only(
+                                  topRight: const Radius.circular(30),
+                                  topLeft: const Radius.circular(30),
+                                  bottomLeft: const Radius.circular(30),
+                                  bottomRight: const Radius.circular(30),
+                                )),
+                            child: Column(
+                              children: [
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 30),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'อุณหภูมิเฉลี่ย  ',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF493a3a),
+                                        ),
+                                      ),
+                                      Text(
+                                        '${_dataLogId?.message[0].datalogTempavg}',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF493a3a),
+                                        ),
+                                      ),
+                                      Text(
+                                        ' °C',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF493a3a),
+                                        ),
                                       ),
                                     ],
-                                    borderRadius: new BorderRadius.only(
-                                      topRight: const Radius.circular(30),
-                                      topLeft: const Radius.circular(30),
-                                      bottomLeft: const Radius.circular(30),
-                                      bottomRight: const Radius.circular(30),
-                                    )),
-                                child: Column(
-                                  children: [
-                                    SizedBox(
-                                      height: 20,
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 10, horizontal: 30),
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            'อุณหภูมิเฉลี่ย  ',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF493a3a),
-                                            ),
-                                          ),
-                                          Text(
-                                            '${_dataLogId?.message[0].datalogTempavg}',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF493a3a),
-                                            ),
-                                          ),
-                                          Text(
-                                            ' °C',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF493a3a),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 10, horizontal: 30),
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            'จำนวนการทำงาน  ',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF493a3a),
-                                            ),
-                                          ),
-                                          Text(
-                                            '${_dataLogId?.message[0].datalogCount}',
-                                            // '${filteredUsers[0]['datalogCount']}',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF493a3a),
-                                            ),
-                                          ),
-                                          Text(
-                                            '  ครั้ง',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF493a3a),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 10, horizontal: 30),
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            DateFormat('วันที่ ' +
-                                                    'dd-MM-yyyy' +
-                                                    ' น.')
-                                                .format(_dataLogId != null
-                                                    ? _dataLogId!
-                                                        .message[0].datalogTime
-                                                    : DateTime.now()),
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF493a3a),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          })
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              height: 120,
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 30),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'จำนวนการทำงาน  ',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF493a3a),
+                                        ),
+                                      ),
+                                      Text(
+                                        '${_dataLogId?.message[0].datalogCount}',
+                                        // '${filteredUsers[0]['datalogCount']}',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF493a3a),
+                                        ),
+                                      ),
+                                      Text(
+                                        '  ครั้ง',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF493a3a),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 30),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        DateFormat('วันที่ ' +
+                                                'dd-MM-yyyy' +
+                                                ' น.')
+                                            .format(_dataLogId != null
+                                                ? _dataLogId!
+                                                    .message[0].datalogTime
+                                                : DateTime.now()),
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF493a3a),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            Center(
-                              child: SpinKitFadingCircle(
-                                duration: Duration(milliseconds: 2000),
-                                color: Colors.blue,
-                                size: 50.0,
-                              ),
-                            ),
-                          ],
-                        )
-                ],
-              ),
-            ),
-          ],
+                          ),
+                        );
+                      })
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 120,
+                        ),
+                        Center(
+                          child: SpinKitFadingCircle(
+                            duration: Duration(milliseconds: 2000),
+                            color: Colors.blue,
+                            size: 50.0,
+                          ),
+                        ),
+                      ],
+                    )
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

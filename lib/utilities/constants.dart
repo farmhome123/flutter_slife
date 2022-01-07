@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
 
 final kHintTextStyle = TextStyle(
-  color: Colors.white54,
+  color: Colors.black,
   fontFamily: 'OpenSans',
 );
 
 final kLabelStyle = TextStyle(
-  color: Colors.white,
+  color: Colors.black,
   fontWeight: FontWeight.bold,
   fontFamily: 'OpenSans',
 );
 
 
 final kEditLabelStyle = TextStyle(
-  color: Colors.white,
+  color: Colors.black,
   fontWeight: FontWeight.bold,
   fontFamily: 'OpenSans',
 );
 
 final kProfileStyle = TextStyle(
-  color: Colors.white,
+  color: Colors.black,
   fontSize: 16,
   fontWeight: FontWeight.bold,
   fontFamily: 'OpenSans',
 );
 
 final kBoxDecorationStyle = BoxDecoration(
-  color: Color(0xFF6CA8F1),
+  color: Colors.green[400]!,
   borderRadius: BorderRadius.circular(10.0),
   boxShadow: [
     BoxShadow(

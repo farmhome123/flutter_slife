@@ -1,12 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:decorated_icon/decorated_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contron/models/datasocketio.dart';
+import 'package:flutter_contron/models/user/datastateuser.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_switch/flutter_switch.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart';
+import 'package:http/http.dart' as http;
 
 class DashBoard extends StatefulWidget {
   const DashBoard({Key? key}) : super(key: key);
@@ -18,11 +21,14 @@ class DashBoard extends StatefulWidget {
 class _DashBoardState extends State<DashBoard> {
   bool status = false;
   String? _homeIcon;
-
+  Timer? _timer;
   var value = 0;
   String? _message;
   DataSocket? _datasocket;
   Socket? socket;
+  String? iduser;
+  DataStateUser? dataStateUser;
+
 //https://apisocketio.komkawila.com/
   String? _setImage() {
     if (value < 30) {
@@ -37,38 +43,63 @@ class _DashBoardState extends State<DashBoard> {
   }
 
   Color? _setledyellow() {
-    if (_datasocket?.ledyellow == '1') {
+    if (_datasocket?.ledy == '1') {
       return Colors.yellow;
-    }
-    if (_datasocket?.ledyellow == '0') {
+    } else if (_datasocket?.ledy == '0') {
+      return Colors.grey;
+    } else {
       return Colors.grey;
     }
   }
 
   Color? _setledgreen() {
-    if (_datasocket?.ledgreen == '1') {
+    if (_datasocket?.ledg == '1') {
       return Colors.green;
-    }
-    if (_datasocket?.ledgreen == '0') {
+    } else if (_datasocket?.ledg == '0') {
+      return Colors.grey;
+    } else {
       return Colors.grey;
     }
   }
 
   Color? _setledred() {
-    if (_datasocket?.ledred == '1') {
+    if (_datasocket?.ledr == '1') {
       return Colors.red;
-    }
-    if (_datasocket?.ledred == '0') {
+    } else if (_datasocket?.ledr == '0') {
+      return Colors.grey;
+    } else {
       return Colors.grey;
     }
   }
 
   @override
   void initState() {
-    _setImage();
-    initializeSocket();
     // TODO: implement initState
     super.initState();
+    _setImage();
+    getUserId();
+
+    // _timer = new Timer(const Duration(milliseconds: 400), () {
+    //   initializeSocket();
+    // });
+
+    if (iduser != null) {
+      initializeSocket();
+      getUserStatus();
+    } else {
+      _timer = new Timer(const Duration(milliseconds: 400), () {
+        initializeSocket();
+        getUserStatus();
+      });
+    }
+  }
+
+  getUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      iduser = prefs.getString('userId');
+    });
+    print('iduser = ${iduser}');
   }
 
   ///192.168.0.109
@@ -79,6 +110,7 @@ class _DashBoardState extends State<DashBoard> {
     socket!
         .disconnect(); // --> disconnects the Socket.IO client once the screen is disposed
     super.dispose();
+    _timer?.cancel();
   }
 
   // sendMessage(String message) {
@@ -93,18 +125,49 @@ class _DashBoardState extends State<DashBoard> {
   //   );
   // }คำสั่
   sendMessage(String message) {
-    socket!
-        .emit("newChatMessage", {'body': 'Testfarm', 'senderId': socket!.id});
+    socket!.emit("newChatMessage", {'body': '${message}'});
   }
+
 //{"temperature": "22.28","ledyellow": "0","ledgreen": "1","ledred": "0","countred": "41","countyellow": "51"}
+  Future sendStatus() async {
+    var eiei = status ? 1 : 0;
+    final body = {'user_enable': eiei.toString()};
+    var res = await http.put(
+        Uri.parse(
+          'https://sttslife-api.sttslife.co/users/enable/${iduser}',
+        ),
+        body: body);
+    if (res.statusCode == 200) {
+      print('success ');
+    } else {
+      print('error');
+    }
+  }
+
+  getUserStatus() async {
+    var res = await http.get(Uri.parse(
+      'https://sttslife-api.sttslife.co/users/${iduser}',
+    ));
+    if (res.statusCode == 200) {
+      print('success getUserStatus ');
+      setState(() {
+        dataStateUser = dataStateUserFromJson(res.body);
+        status = dataStateUser!.message![0].userEnable == 0 ? false : true;
+      });
+      print('status = ${dataStateUser!.message![0].userEnable}');
+    } else {
+      print('error');
+    }
+  }
 
   void initializeSocket() {
+    print('initializeSocket');
     socket = io(
-        "http://dns.komkawila.com:4000/",
+        'http://dns.komkawila.com:4000/',
         OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()
-            .setQuery({"roomId": '12'})
+            .setQuery({"roomId": iduser})
             .build());
     socket!.connect(); //connect the Socket.IO Client to the Serverƒ
     //SOCKET EVENTS
@@ -134,71 +197,62 @@ class _DashBoardState extends State<DashBoard> {
 
   @override
   Widget build(BuildContext context) {
-    if (_datasocket == null) {
-      return Center(
-        child: SpinKitFadingCircle(
-          duration: Duration(milliseconds: 2000),
-          color: Colors.blue,
-          size: 50.0,
-        ),
-      );
-    }
-    {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return SingleChildScrollView(
+      child: Column(
         children: [
           SizedBox(
-            height: 20,
+            height: 30,
+          ),
+          Text(
+            'App SLife',
+            style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.green[400]),
+          ),
+          SizedBox(
+            height: 15,
           ),
           Container(
-            height: MediaQuery.of(context).size.height / 6,
-            width: MediaQuery.of(context).size.width * 0.9,
-            decoration: BoxDecoration(
-                color: Color(0xF6BC6D3),
-                border: Border.all(color: Color(0xFF105BCF)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0xFF105BCF).withOpacity(0.4),
-                    spreadRadius: 4,
-                    blurRadius: 7,
-                    offset: Offset(0, 3), // changes position of shadow
-                  ),
-                ],
-                borderRadius: new BorderRadius.only(
-                  topRight: const Radius.circular(30),
-                  topLeft: const Radius.circular(30),
-                  bottomLeft: const Radius.circular(30),
-                  bottomRight: const Radius.circular(30),
-                )),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                Image.asset(
+                  'assets/images/iconhome1.png',
+                  fit: BoxFit.fitHeight,
+                  height: 100,
+                ),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Image.asset(
-                      'assets/images/iconhome1.png',
-                      fit: BoxFit.fitHeight,
-                      height: 100,
-                    ),
-                    Text(
-                      '${_datasocket?.temperature}',
-                      style: TextStyle(
-                        fontSize: 50.0,
-                        letterSpacing: -4,
-                        foreground: Paint()
-                          ..strokeWidth = 5
-                          ..color = Colors.blue[400]!,
-                      ),
-                    ),
-                    Text(
-                      ' °C',
-                      style: TextStyle(
-                        fontSize: 50.0,
-                        letterSpacing: -6,
-                        foreground: Paint()
-                          ..strokeWidth = 5
-                          ..color = Colors.blue[400]!,
-                      ),
+                    Row(
+                      children: [
+                        _datasocket?.temp == null
+                            ? SpinKitFadingCircle(
+                                duration: Duration(milliseconds: 2000),
+                                color: Colors.green[400],
+                                size: 50.0,
+                              )
+                            : Text(
+                                '${_datasocket?.temp}',
+                                style: TextStyle(
+                                  fontSize: 50.0,
+                                  letterSpacing: -4,
+                                  foreground: Paint()
+                                    ..strokeWidth = 5
+                                    ..color = Colors.green[400]!,
+                                ),
+                              ),
+                        Text(
+                          ' °C',
+                          style: TextStyle(
+                            fontSize: 50.0,
+                            letterSpacing: -6,
+                            foreground: Paint()
+                              ..strokeWidth = 5
+                              ..color = Colors.green[400]!,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -206,7 +260,7 @@ class _DashBoardState extends State<DashBoard> {
             ),
           ),
           SizedBox(
-            height: 15,
+            height: 30,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -259,101 +313,121 @@ class _DashBoardState extends State<DashBoard> {
             ],
           ),
           SizedBox(
-            height: 15,
+            height: 30,
           ),
           FlutterSwitch(
-            activeColor: Color(0xFF105BCF),
+            activeColor: Colors.green[400]!,
             toggleColor: Colors.white,
-            width: 125.0,
-            height: 60.0,
+            width: 120.0,
+            height: 40.0,
             valueFontSize: 25.0,
             toggleSize: 45.0,
             value: status,
             borderRadius: 30.0,
-            padding: 8.0,
+            padding: 5.0,
             showOnOff: true,
             onToggle: (val) {
               setState(() {
                 status = val;
                 print(status);
-                sendMessage(status.toString());
+                // sendMessage(status.toString());
+                sendMessage('AT+TOGLE=${status ? 1 : 0}');
               });
+              sendStatus();
             },
           ),
+          Column(
+            children: [
+              IconButton(
+                onPressed: () {
+                  print('ทดสอบระบบ');
+                  sendMessage('AT+TEST=1');
+                },
+                icon: Icon(Icons.monitor),
+                tooltip: 'ทดสอบระบบ',
+                iconSize: 50,
+                color: Colors.green[400]!,
+              ),
+              Text(
+                'ทดสอบระบบ',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
           SizedBox(
-            height: 15,
+            height: 30,
           ),
           Container(
-            height: MediaQuery.of(context).size.height / 7,
-            width: MediaQuery.of(context).size.width * 0.9,
-            decoration: BoxDecoration(
-                color: Color(0xF105BCF),
-                border: Border.all(color: Color(0xFF105BCF)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0xFF105BCF).withOpacity(0.4),
-                    spreadRadius: 4,
-                    blurRadius: 7,
-                    offset: Offset(0, 3), // changes position of shadow
-                  ),
-                ],
-                borderRadius: new BorderRadius.only(
-                  topRight: const Radius.circular(30),
-                  topLeft: const Radius.circular(30),
-                  bottomLeft: const Radius.circular(30),
-                  bottomRight: const Radius.circular(30),
-                )),
-            child: Column(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Text(
-                    'Count Red: ${_datasocket?.countred}',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                Container(
+                  height: 130,
+                  width: MediaQuery.of(context).size.width / 2.5,
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        side: BorderSide(color: Colors.green, width: 2),
+                        borderRadius: BorderRadius.circular(20.0)),
+                    elevation: 4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text(
+                          'Count Red',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        _datasocket?.countred == null
+                            ? SpinKitFadingCircle(
+                                duration: Duration(milliseconds: 2000),
+                                color: Colors.blue,
+                                size: 20.0,
+                              )
+                            : Text(
+                                '${_datasocket?.countred}',
+                                style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green[400]),
+                              )
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          SizedBox(
-            height: 15,
-          ),
-          Container(
-            height: MediaQuery.of(context).size.height / 7,
-            width: MediaQuery.of(context).size.width * 0.9,
-            decoration: BoxDecoration(
-                color: Color(0xF6BC6D3),
-                border: Border.all(color: Color(0xFF105BCF)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0xFF105BCF).withOpacity(0.4),
-                    spreadRadius: 4,
-                    blurRadius: 7,
-                    offset: Offset(0, 3), // changes position of shadow
-                  ),
-                ],
-                borderRadius: new BorderRadius.only(
-                  topRight: const Radius.circular(30),
-                  topLeft: const Radius.circular(30),
-                  bottomLeft: const Radius.circular(30),
-                  bottomRight: const Radius.circular(30),
-                )),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Text(
-                    'Count Yellow: ${_datasocket?.countyellow}',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                Container(
+                  height: 130,
+                  width: MediaQuery.of(context).size.width / 2.5,
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        side: BorderSide(color: Colors.green, width: 2),
+                        borderRadius: BorderRadius.circular(20.0)),
+                    elevation: 4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text(
+                          'Count Yellow',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        _datasocket?.countyellow == null
+                            ? SpinKitFadingCircle(
+                                duration: Duration(milliseconds: 2000),
+                                color: Colors.blue,
+                                size: 20.0,
+                              )
+                            : Text(
+                                '${_datasocket?.countyellow}',
+                                style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green[400]),
+                              )
+                      ],
                     ),
                   ),
                 ),
@@ -364,7 +438,8 @@ class _DashBoardState extends State<DashBoard> {
             height: 50,
           ),
         ],
-      );
-    }
+      ),
+    );
+    // }
   }
 }

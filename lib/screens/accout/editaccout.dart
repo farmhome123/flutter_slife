@@ -7,6 +7,8 @@ import 'package:flutter_contron/utilities/constants.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EditAccoutScreen extends StatefulWidget {
   const EditAccoutScreen({Key? key}) : super(key: key);
@@ -30,41 +32,50 @@ TextEditingController? _lifetimeController;
 
 class _EditAccoutScreenState extends State<EditAccoutScreen> {
   bool showPassword = false;
-
-  List? _dataBrand;
-  String? _myStateBrand = _dataUser?.message[0].airBrand;
   List? _dataType;
-  String? _myStateType = _dataUser?.message[0].airType;
+  List? _dataBrand;
+  List? _dataSpecies;
+  String? _myStateBrand = _dataUser?.message?[0].airBrand;
+  String? _myStateType = _dataUser?.message?[0].airType;
+  String? _myStateSpecies = _dataUser?.message?[0].airSpecies;
+  String? username;
+  String? password;
+  final f = new DateFormat('yyyy-MM-dd');
 
   Future<void> getUserprofile() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    username = sharedPreferences.getString('user_username');
+    password = sharedPreferences.getString('user_password');
     var userData = {
-      'user_username': 'user11',
-      'user_password': 12345678,
+      'user_username': username,
+      'user_password': password,
     };
+
     try {
       var res = await CallAPI().getProfile(userData);
       print(res);
       setState(() {
         _dataUser = res;
         _usernameController =
-            TextEditingController(text: _dataUser?.message[0].userUsername);
+            TextEditingController(text: _dataUser?.message?[0].userUsername);
 
         _telController =
-            TextEditingController(text: _dataUser?.message[0].userTel);
+            TextEditingController(text: _dataUser?.message?[0].userTel);
 
         _detailController =
-            TextEditingController(text: _dataUser?.message[0].userDetail);
+            TextEditingController(text: _dataUser?.message?[0].userDetail);
 
         _locationController =
-            TextEditingController(text: _dataUser?.message[0].userLocaltion);
+            TextEditingController(text: _dataUser?.message?[0].userLocaltion);
 
         _btuController =
-            TextEditingController(text: _dataUser?.message[0].airBtu);
+            TextEditingController(text: _dataUser?.message?[0].airBtu);
 
         _lifetimeController =
-            TextEditingController(text: _dataUser?.message[0].airLifetime);
-        _myStateBrand = _dataUser?.message[0].airBrand;
-        _myStateType = _dataUser?.message[0].airType;
+            TextEditingController(text: _dataUser?.message?[0].airLifetime);
+        _myStateBrand = _dataUser?.message?[0].airBrand;
+        _myStateType = _dataUser?.message?[0].airType;
+        _myStateSpecies = _dataUser?.message?[0].airSpecies;
       });
     } catch (error) {
       print(error);
@@ -73,25 +84,33 @@ class _EditAccoutScreenState extends State<EditAccoutScreen> {
 
   Future<void> editUserData() async {
     var userDataEdit = {
-      "user_id": _dataUser?.message[0].userId.toString(),
-      "user_username": _usernameController!.text,
-      "user_password": _dataUser?.message[0].userPassword.toString(),
-      "user_detail": _detailController!.text,
-      "user_localtion": _locationController!.text,
-      "user_type": _dataUser?.message[0].userType.toString(),
-      "user_purchaseorder": _dataUser?.message[0].userPurchaseorder.toString(),
-      "user_tel": _telController!.text,
-      "air_brand": _myStateBrand.toString(),
-      "air_btu": _btuController!.text,
-      "air_type": _myStateType.toString(),
-      "air_lifetime": _lifetimeController!.text,
+      await "user_id": _dataUser?.message?[0].userId.toString(),
+      await "user_username": _usernameController!.text,
+      await "user_password": _dataUser?.message?[0].userPassword.toString(),
+      await "user_detail": _detailController!.text,
+      await "user_localtion": _locationController!.text,
+      await "user_type": _dataUser?.message?[0].userType.toString(),
+      await "user_purchaseorder":
+          _dataUser?.message?[0].userPurchaseorder.toString(),
+      await "user_tel": _telController!.text,
+      await "air_species": _myStateSpecies.toString(),
+      await "air_brand": _myStateBrand.toString(),
+      await "air_btu": _btuController!.text,
+      await "air_type": _myStateType.toString(),
+      await "air_lifetime": _lifetimeController!.text,
+      await "user_startwaranty": f
+          .format(DateTime.parse('${_dataUser?.message?[0].userStartwaranty}'))
+          .toString(),
+      await "user_endwaranty": f
+          .format(DateTime.parse('${_dataUser?.message?[0].userEndwaranty}'))
+          .toString(),
     };
     var res = await http.put(
         Uri.parse('https://sttslife-api.sttslife.co/users/'),
         body: userDataEdit);
     print(json.decode(res.body));
     print(userDataEdit);
-    Navigator.pushNamed(context, '/home');
+    Navigator.pop(context);
   }
 
   Future<void> getBrands() async {
@@ -100,6 +119,15 @@ class _EditAccoutScreenState extends State<EditAccoutScreen> {
     var data = json.decode(res.body);
     setState(() {
       _dataBrand = data['message'];
+    });
+  }
+
+  Future<void> getSpecies() async {
+    var res = await http
+        .get(Uri.parse('https://sttslife-api.sttslife.co/air/species'));
+    var data = json.decode(res.body);
+    setState(() {
+      _dataSpecies = data['message'];
     });
   }
 
@@ -120,6 +148,7 @@ class _EditAccoutScreenState extends State<EditAccoutScreen> {
     getUserprofile();
     getBrands();
     getType();
+    getSpecies();
   }
 
   @override
@@ -129,46 +158,39 @@ class _EditAccoutScreenState extends State<EditAccoutScreen> {
         body: SafeArea(
           child: Stack(
             children: [
-              Container(
-                height: double.infinity,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFF73AEF5),
-                      Color(0xFF61A4F1),
-                      Color(0xFF568DE0),
-                      Color(0xFF398AE5),
-                    ],
-                    stops: [0.1, 0.4, 0.7, 0.9],
-                  ),
-                ),
-              ),
+              // Container(
+              //   height: double.infinity,
+              //   width: double.infinity,
+              //   decoration: BoxDecoration(
+              //     gradient: LinearGradient(
+              //       begin: Alignment.topCenter,
+              //       end: Alignment.bottomCenter,
+              //       colors: [
+              //         Color(0xFF73AEF5),
+              //         Color(0xFF61A4F1),
+              //         Color(0xFF568DE0),
+              //         Color(0xFF398AE5),
+              //       ],
+              //       stops: [0.1, 0.4, 0.7, 0.9],
+              //     ),
+              //   ),
+              // ),
               Container(
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
                       SizedBox(
-                        height: 50,
+                        height: 30,
                       ),
                       Text(
                         'Edit Profile',
                         style: TextStyle(
-                            fontSize: 30,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black),
+                            color: Colors.green[400]),
                       ),
                       SizedBox(
                         height: 20,
-                      ),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(80.0),
-                        child: Image.network(
-                            'https://image.freepik.com/free-vector/mysterious-mafia-man-smoking-cigarette_52683-34828.jpg',
-                            height: 100,
-                            fit: BoxFit.cover),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(12.0),
@@ -176,32 +198,32 @@ class _EditAccoutScreenState extends State<EditAccoutScreen> {
                           children: [
                             buildTextField(
                                 'ชื่อผู้ใช้งาน',
-                                "${_dataUser?.message[0].userUsername}",
+                                "${_dataUser?.message?[0].userUsername}",
                                 _usernameController!,
                                 false),
                             buildTextField(
                                 'เบอร์โทรศัทพ์ติดต่อ',
-                                "${_dataUser?.message[0].userTel}",
+                                "${_dataUser?.message?[0].userTel}",
                                 _telController!,
                                 false),
                             buildTextField(
                                 'รายละเอียดข้อมูลผู้ใช้',
-                                "${_dataUser?.message[0].userDetail}",
+                                "${_dataUser?.message?[0].userDetail}",
                                 _detailController!,
                                 false),
                             buildTextField(
                                 'สถานที่ติดตั้ง',
-                                "${_dataUser?.message[0].userLocaltion}",
+                                "${_dataUser?.message?[0].userLocaltion}",
                                 _locationController!,
                                 false),
                             buildTextField(
                                 'ขนาดBTU',
-                                "${_dataUser?.message[0].airBtu}",
+                                "${_dataUser?.message?[0].airBtu}",
                                 _btuController!,
                                 false),
                             buildTextField(
                                 'อายุการใช้งาน',
-                                "${_dataUser?.message[0].airLifetime}",
+                                "${_dataUser?.message?[0].airLifetime}",
                                 _lifetimeController!,
                                 false),
 
@@ -240,7 +262,7 @@ class _EditAccoutScreenState extends State<EditAccoutScreen> {
                                                   value: item['brand_name']
                                                       .toString(),
                                                 );
-                                              })?.toList() ??
+                                              }).toList() ??
                                               [],
                                         ),
                                       ),
@@ -289,7 +311,56 @@ class _EditAccoutScreenState extends State<EditAccoutScreen> {
                                                   value: item['airtype_name']
                                                       .toString(),
                                                 );
-                                              })?.toList() ??
+                                              }).toList() ??
+                                              [],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+//////////////////////////////drop species //////////////////////////
+
+                            SizedBox(
+                              height: 30,
+                            ),
+                            Container(
+                              padding:
+                                  EdgeInsets.only(left: 15, right: 15, top: 5),
+                              color: Colors.white,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: DropdownButtonHideUnderline(
+                                      child: ButtonTheme(
+                                        alignedDropdown: true,
+                                        child: DropdownButton<String>(
+                                          value: _myStateSpecies,
+                                          iconSize: 30,
+                                          icon: (null),
+                                          style: TextStyle(
+                                            color: Colors.black54,
+                                            fontSize: 16,
+                                          ),
+                                          hint: Text('Select State'),
+                                          onChanged: (newValue) {
+                                            setState(() {
+                                              _myStateSpecies = newValue;
+
+                                              print(_myStateType);
+                                            });
+                                          },
+                                          items: _dataSpecies?.map((item) {
+                                                return new DropdownMenuItem(
+                                                  child: new Text(
+                                                      item['species_name']),
+                                                  value: item['species_name']
+                                                      .toString(),
+                                                );
+                                              }).toList() ??
                                               [],
                                         ),
                                       ),
@@ -310,7 +381,7 @@ class _EditAccoutScreenState extends State<EditAccoutScreen> {
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(20)),
                                   onPressed: () {
-                                    Navigator.pushNamed(context, '/home');
+                                    Navigator.pop(context);
                                   },
                                   child: Text("CANCEL",
                                       style: TextStyle(

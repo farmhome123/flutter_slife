@@ -1,15 +1,16 @@
 // To parse this JSON data, do
 //
-//     final dataUser = dataUserFromJson(jsonString);
+//     final dataStateUser = dataStateUserFromJson(jsonString);
 
 import 'dart:convert';
 
-DataUser dataUserFromJson(String str) => DataUser.fromJson(json.decode(str));
+DataStateUser dataStateUserFromJson(String str) =>
+    DataStateUser.fromJson(json.decode(str));
 
-String dataUserToJson(DataUser data) => json.encode(data.toJson());
+String dataStateUserToJson(DataStateUser data) => json.encode(data.toJson());
 
-class DataUser {
-  DataUser({
+class DataStateUser {
+  DataStateUser({
     required this.err,
     required this.status,
     required this.message,
@@ -19,7 +20,7 @@ class DataUser {
   final bool status;
   final List<Message>? message;
 
-  factory DataUser.fromJson(Map<String, dynamic> json) => DataUser(
+  factory DataStateUser.fromJson(Map<String, dynamic> json) => DataStateUser(
         err: json["err"] == null ? null : json["err"],
         status: json["status"] == null ? null : json["status"],
         message: json["message"] == null
@@ -70,14 +71,14 @@ class Message {
   final String airSpecies;
   final String userPurchaseorder;
   final String userTel;
-  final DateTime? userUpdatetimes;
-  final DateTime? userCreatetimes;
+  final DateTime userUpdatetimes;
+  final DateTime userCreatetimes;
   final String airBrand;
   final String airBtu;
   final String airType;
   final String airLifetime;
-  final DateTime? userStartwaranty;
-  final DateTime? userEndwaranty;
+  final DateTime userStartwaranty;
+  final DateTime userEndwaranty;
   final int userModes;
 
   factory Message.fromJson(Map<String, dynamic> json) => Message(
@@ -96,22 +97,14 @@ class Message {
             ? null
             : json["user_purchaseorder"],
         userTel: json["user_tel"] == null ? null : json["user_tel"],
-        userUpdatetimes: json["user_updatetimes"] == null
-            ? null
-            : DateTime.parse(json["user_updatetimes"]),
-        userCreatetimes: json["user_createtimes"] == null
-            ? null
-            : DateTime.parse(json["user_createtimes"]),
+        userUpdatetimes: DateTime.parse(json["user_updatetimes"]),
+        userCreatetimes: DateTime.parse(json["user_createtimes"]),
         airBrand: json["air_brand"] == null ? null : json["air_brand"],
         airBtu: json["air_btu"] == null ? null : json["air_btu"],
         airType: json["air_type"] == null ? null : json["air_type"],
         airLifetime: json["air_lifetime"] == null ? null : json["air_lifetime"],
-        userStartwaranty: json["user_startwaranty"] == null
-            ? null
-            : DateTime.parse(json["user_startwaranty"]),
-        userEndwaranty: json["user_endwaranty"] == null
-            ? null
-            : DateTime.parse(json["user_endwaranty"]),
+        userStartwaranty: DateTime.parse(json["user_startwaranty"]),
+        userEndwaranty: DateTime.parse(json["user_endwaranty"]),
         userModes: json["user_modes"] == null ? null : json["user_modes"],
       );
 
@@ -128,19 +121,19 @@ class Message {
             userPurchaseorder == null ? null : userPurchaseorder,
         "user_tel": userTel == null ? null : userTel,
         "user_updatetimes":
-            userUpdatetimes == null ? null : userUpdatetimes?.toIso8601String(),
+            userUpdatetimes == null ? null : userUpdatetimes.toIso8601String(),
         "user_createtimes":
-            userCreatetimes == null ? null : userCreatetimes?.toIso8601String(),
+            userCreatetimes == null ? null : userCreatetimes.toIso8601String(),
         "air_brand": airBrand == null ? null : airBrand,
         "air_btu": airBtu == null ? null : airBtu,
         "air_type": airType == null ? null : airType,
         "air_lifetime": airLifetime == null ? null : airLifetime,
         "user_startwaranty": userStartwaranty == null
             ? null
-            : "${userStartwaranty?.year.toString().padLeft(4, '0')}-${userStartwaranty?.month.toString().padLeft(2, '0')}-${userStartwaranty?.day.toString().padLeft(2, '0')}",
+            : "${userStartwaranty.year.toString().padLeft(4, '0')}-${userStartwaranty.month.toString().padLeft(2, '0')}-${userStartwaranty.day.toString().padLeft(2, '0')}",
         "user_endwaranty": userEndwaranty == null
             ? null
-            : "${userEndwaranty?.year.toString().padLeft(4, '0')}-${userEndwaranty?.month.toString().padLeft(2, '0')}-${userEndwaranty?.day.toString().padLeft(2, '0')}",
+            : "${userEndwaranty.year.toString().padLeft(4, '0')}-${userEndwaranty.month.toString().padLeft(2, '0')}-${userEndwaranty.day.toString().padLeft(2, '0')}",
         "user_modes": userModes == null ? null : userModes,
       };
 }
