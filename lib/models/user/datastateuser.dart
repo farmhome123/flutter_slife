@@ -39,27 +39,28 @@ class DataStateUser {
 }
 
 class Message {
-  Message({
-    required this.userId,
-    required this.userEnable,
-    required this.userUsername,
-    required this.userPassword,
-    required this.userDetail,
-    required this.userLocaltion,
-    required this.userType,
-    required this.airSpecies,
-    required this.userPurchaseorder,
-    required this.userTel,
-    required this.userUpdatetimes,
-    required this.userCreatetimes,
-    required this.airBrand,
-    required this.airBtu,
-    required this.airType,
-    required this.airLifetime,
-    required this.userStartwaranty,
-    required this.userEndwaranty,
-    required this.userModes,
-  });
+  Message(
+      {required this.userId,
+      required this.userEnable,
+      required this.userUsername,
+      required this.userPassword,
+      required this.userDetail,
+      required this.userLocaltion,
+      required this.userType,
+      required this.airSpecies,
+      required this.userPurchaseorder,
+      required this.userTel,
+      required this.userUpdatetimes,
+      required this.userCreatetimes,
+      required this.airBrand,
+      required this.airBtu,
+      required this.airType,
+      required this.airLifetime,
+      required this.userStartwaranty,
+      required this.userEndwaranty,
+      required this.userModes,
+      required this.user_pulseset,
+      userPulseset});
 
   final int userId;
   final int userEnable;
@@ -80,6 +81,7 @@ class Message {
   final DateTime userStartwaranty;
   final DateTime userEndwaranty;
   final int userModes;
+  final int user_pulseset;
 
   factory Message.fromJson(Map<String, dynamic> json) => Message(
         userId: json["user_id"] == null ? null : json["user_id"],
@@ -106,6 +108,8 @@ class Message {
         userStartwaranty: DateTime.parse(json["user_startwaranty"]),
         userEndwaranty: DateTime.parse(json["user_endwaranty"]),
         userModes: json["user_modes"] == null ? null : json["user_modes"],
+        user_pulseset:
+            json["user_pulseset"] == null ? null : json["user_pulseset"],
       );
 
   Map<String, dynamic> toJson() => {

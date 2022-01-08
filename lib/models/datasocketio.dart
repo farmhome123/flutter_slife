@@ -25,7 +25,6 @@ class DataSocket {
     required this.t,
     required this.pulse,
     required this.sleeps,
-    required this.pulseset,
     required this.modeId,
   });
 
@@ -43,7 +42,6 @@ class DataSocket {
   String t;
   String pulse;
   String sleeps;
-  String pulseset;
   String modeId;
 
   factory DataSocket.fromJson(Map<String, dynamic> json) => DataSocket(
@@ -61,7 +59,6 @@ class DataSocket {
         t: json["t"] == null ? null : json["t"],
         pulse: json["pulse"] == null ? null : json["pulse"],
         sleeps: json["sleeps"] == null ? null : json["sleeps"],
-        pulseset: json["pulseset"] == null ? null : json["pulseset"],
         modeId: json["mode_id"] == null ? null : json["mode_id"],
       );
 
@@ -80,7 +77,6 @@ class DataSocket {
         "t": t == null ? null : t,
         "pulse": pulse == null ? null : pulse,
         "sleeps": sleeps == null ? null : sleeps,
-        "pulseset": pulseset == null ? null : pulseset,
         "mode_id": modeId == null ? null : modeId,
       };
 }

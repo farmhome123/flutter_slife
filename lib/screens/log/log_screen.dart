@@ -145,7 +145,7 @@ class _LogScreenState extends State<LogScreen> {
                                   ),
                                   value: item.datalogId.toString(),
                                 );
-                              })?.toList() ??
+                              }).toList() ??
                               [],
                         ),
                       ),

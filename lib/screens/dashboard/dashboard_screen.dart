@@ -3,13 +3,16 @@ import 'dart:convert';
 
 import 'package:decorated_icon/decorated_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_contron/models/dataMax.dart';
 import 'package:flutter_contron/models/datasocketio.dart';
 import 'package:flutter_contron/models/user/datastateuser.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_switch/flutter_switch.dart';
+import 'package:knob_widget/knob_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:http/http.dart' as http;
+import 'package:syncfusion_flutter_gauges/gauges.dart';
 
 class DashBoard extends StatefulWidget {
   const DashBoard({Key? key}) : super(key: key);
@@ -28,6 +31,12 @@ class _DashBoardState extends State<DashBoard> {
   Socket? socket;
   String? iduser;
   DataStateUser? dataStateUser;
+  DataMax? dataMax;
+
+  KnobController? _controller;
+  double? _knobValue;
+  double? _valueSlide = 0;
+  double? _maximum;
 
 //https://apisocketio.komkawila.com/
   String? _setImage() {
@@ -153,8 +162,28 @@ class _DashBoardState extends State<DashBoard> {
       setState(() {
         dataStateUser = dataStateUserFromJson(res.body);
         status = dataStateUser!.message![0].userEnable == 0 ? false : true;
+        _valueSlide =
+            double.parse('${dataStateUser!.message![0].user_pulseset}');
       });
       print('status = ${dataStateUser!.message![0].userEnable}');
+      getMaxMode();
+    } else {
+      print('error');
+    }
+  }
+
+  getMaxMode() async {
+    var res = await http.get(Uri.parse(
+        'https://sttslife-api.sttslife.co/config/id/${dataStateUser!.message![0].userModes}'));
+    var data = json.encode(res.body);
+
+    if (res.statusCode == 200) {
+      setState(() {
+        dataMax = dataMaxFromJson(res.body);
+      });
+      setState(() {
+        _maximum = double.parse('${dataMax!.message![0].configPulsecount}');
+      });
     } else {
       print('error');
     }
@@ -191,13 +220,14 @@ class _DashBoardState extends State<DashBoard> {
         if (atcommands.indexOf('AT+TOGGLE') != -1) {
           print('############ AT+TOGGLE');
           setState(() {
-            status = (int.parse(values) == 0 ? false : true) ; 
+            status = (int.parse(values) == 0 ? false : true);
+          });
+        } else if (atcommands.indexOf('AT+PULSE') != -1) {
+          print('atcommands = ${atcommands} & values = ${values}');
+          setState(() {
+            _valueSlide = double.parse('${values}');
           });
         }
-        //  else if (atcommands.indexOf('AT+MODE') != -1) {
-        //   // เปลี่ยนโหมด
-        // }
-        print('atcommands = ${atcommands} & values = ${values}');
       }
 
       // print(_datasocket);
@@ -216,6 +246,7 @@ class _DashBoardState extends State<DashBoard> {
 
   @override
   Widget build(BuildContext context) {
+    final Brightness _brightness = Theme.of(context).brightness;
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -332,48 +363,122 @@ class _DashBoardState extends State<DashBoard> {
             ],
           ),
           SizedBox(
-            height: 30,
-          ),
-          FlutterSwitch(
-            activeColor: Colors.green[400]!,
-            toggleColor: Colors.white,
-            width: 120.0,
-            height: 40.0,
-            valueFontSize: 25.0,
-            toggleSize: 45.0,
-            value: status,
-            borderRadius: 30.0,
-            padding: 5.0,
-            showOnOff: true,
-            onToggle: (val) {
-              setState(() {
-                status = val;
-                print(status);
-                // sendMessage(status.toString());
-                sendMessage('AT+TOGGLE=${status ? 1 : 0}');
-              });
-              sendStatus();
-            },
+            height: 50,
           ),
           Column(
             children: [
-              IconButton(
-                onPressed: () {
-                  print('ทดสอบระบบ');
-                  sendMessage('AT+TEST=1');
+              FlutterSwitch(
+                activeColor: Colors.green[400]!,
+                toggleColor: Colors.white,
+                width: 120.0,
+                height: 40.0,
+                valueFontSize: 25.0,
+                toggleSize: 45.0,
+                value: status,
+                borderRadius: 30.0,
+                padding: 5.0,
+                showOnOff: true,
+                onToggle: (val) {
+                  setState(() {
+                    status = val;
+                    print(status);
+                    // sendMessage(status.toString());
+                    sendMessage('AT+TOGGLE=${status ? 1 : 0}');
+                  });
+                  sendStatus();
                 },
-                icon: Icon(Icons.monitor),
-                tooltip: 'ทดสอบระบบ',
-                iconSize: 50,
-                color: Colors.green[400]!,
               ),
-              Text(
-                'ทดสอบระบบ',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+              SizedBox(
+                height: 15,
+              ),
+              Column(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      print('ทดสอบระบบ');
+                      sendMessage('AT+TEST=1');
+                    },
+                    icon: Icon(Icons.monitor),
+                    tooltip: 'ทดสอบระบบ',
+                    iconSize: 50,
+                    color: Colors.green[400]!,
+                  ),
+                  Text(
+                    'ทดสอบระบบ',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ],
+          ),
+          SizedBox(
+            height: 30,
+          ),
+          SizedBox(
+            child: dataMax?.message?[0].configPulsecount == null
+                ? SpinKitFadingCircle(
+                    duration: Duration(milliseconds: 2000),
+                    color: Colors.blue,
+                    size: 20.0,
+                  )
+                : SfLinearGauge(
+                    minimum: 0.0,
+                    maximum: _maximum!,
+                    animateAxis: true,
+                    axisTrackStyle: const LinearAxisTrackStyle(
+                        thickness: 24, color: Colors.green),
+                    orientation: LinearGaugeOrientation.horizontal,
+                    markerPointers: [
+                      LinearWidgetPointer(
+                        value: _valueSlide!,
+                        onChanged: (value1) {
+                          setState(() {
+                            _valueSlide = value1;
+                          });
+                        },
+                        onChangeEnd: (valueslide) async {
+                          sendMessage(
+                              'AT+PULSE=${valueslide.toStringAsFixed(0)}');
+                          var res = await http.put(
+                              Uri.parse(
+                                  'https://sttslife-api.sttslife.co/users/pulse/${iduser}'),
+                              body: {
+                                'user_pulseset': valueslide.toStringAsFixed(0)
+                              });
+                          if (res.statusCode == 200) {
+                            print('put valueSlide Success');
+                          } else {
+                            print('error');
+                          }
+                        },
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(shape: BoxShape.circle),
+                          child: Center(
+                            child: Column(
+                              children: [
+                                Text(
+                                  _valueSlide!.toStringAsFixed(0),
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black54),
+                                ),
+                                Icon(
+                                  Icons.circle,
+                                  size: 20,
+                                  color: Colors.white,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
           ),
           SizedBox(
             height: 30,

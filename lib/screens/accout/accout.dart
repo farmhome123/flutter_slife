@@ -416,15 +416,16 @@ class _AccoutScreenState extends State<AccoutScreen> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20)),
                             onPressed: () async {
-                              SharedPreferences sharedPreferences =
-                                  await SharedPreferences.getInstance();
-                              sharedPreferences.remove('test_image');
-                              sharedPreferences.remove('userId');
-                              sharedPreferences.remove('user_modes');
-                              sharedPreferences.setInt('appStep', 2);
-                              Navigator.pushReplacementNamed(context, '/login');
-                              // loginUser(userData);
-                              print('logout');
+                              // SharedPreferences sharedPreferences =
+                              //     await SharedPreferences.getInstance();
+                              // sharedPreferences.remove('test_image');
+                              // sharedPreferences.remove('userId');
+                              // sharedPreferences.remove('user_modes');
+                              // sharedPreferences.setInt('appStep', 2);
+                              // Navigator.pushReplacementNamed(context, '/login');
+                              // // loginUser(userData);
+                              // print('logout');
+                              showAlertDialog(context);
                             },
                             child: Text("Logout",
                                 style: TextStyle(
@@ -476,5 +477,44 @@ class _AccoutScreenState extends State<AccoutScreen> {
         ),
       );
     }
+  }
+
+  showAlertDialog(BuildContext context) {
+    // set up the buttons
+    Widget cancelButton = FlatButton(
+      child: Text("Cancel"),
+      onPressed: () {
+        Navigator.pop(context);
+      },
+    );
+    Widget continueButton = FlatButton(
+      child: Text("Continue"),
+      onPressed: () async {
+        SharedPreferences sharedPreferences =
+            await SharedPreferences.getInstance();
+        sharedPreferences.remove('test_image');
+        sharedPreferences.remove('userId');
+        sharedPreferences.remove('user_modes');
+        sharedPreferences.setInt('appStep', 2);
+        Navigator.pushReplacementNamed(context, '/login');
+        // loginUser(userData);
+        print('logout');
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("ออกจากระบบ ?"),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 }

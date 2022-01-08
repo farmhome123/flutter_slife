@@ -46,17 +46,20 @@ class _ModeScreenState extends State<ModeScreen> {
       // print(json.encode(_dataModes));
       print(_dataModesList);
       getUser(iduser);
+  
     } catch (e) {
       print(e);
     }
   }
 
+ 
+
   getUser(id) async {
     var res = await http.get(
         Uri.parse('https://sttslife-api.sttslife.co/users/' + id.toString()));
     final indexuser_modes = res.body.indexOf('user_modes');
-    final indexEnduser_modes = res.body.indexOf('}', indexuser_modes);
     final index_user_modes = res.body.indexOf(':', indexuser_modes + 5) + 1;
+    final indexEnduser_modes = res.body.indexOf(',', index_user_modes);
     final user_modes = res.body.substring(index_user_modes, indexEnduser_modes);
 
     print(user_modes);
@@ -223,55 +226,49 @@ class _ModeScreenState extends State<ModeScreen> {
                         crossAxisCount: 2),
                     itemBuilder: (context, index) {
                       bool checked = index == checkedIndex;
-                      return Card(
-                        elevation: 4,
-                        // color: Colors.green[50],
-                        color: checked ? Colors.green[400] : Colors.white,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text(
-                              'Mode',
-                              style: TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w600),
-                            ),
-                            Text(
-                              '${_dataModesList[index].configName}',
-                              style: TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w600),
-                            ),
-                            // /#RT=user_id,modes_id$
-                            FlatButton.icon(
-                              onPressed: () async {
-                                SharedPreferences prefs =
-                                    await SharedPreferences.getInstance();
-                                print(
-                                    'ตั้งค่าโหมดเป็น: #RT=${_dataModesList[index].configId}\$');
-                                // sendMessage(
-                                //     '#RT=${_dataModesList[index].configId}\$');
-                                sendMessage(
-                                    'AT+MODE=${_dataModesList[index].configId}|${index}');
-                                sendUserMode(_dataModesList[index].configId);
-                                //////put api
-                                ///
-                                setState(() {
-                                  _Textmode = _dataModesList[index]
-                                      .configName
-                                      .toString();
-                                  checkedIndex = index;
-                                  // prefs.setString(
-                                  //     'user_modes', index.toString());
-                                });
-                                print(checkedIndex);
-                              },
-                              icon: Icon(
-                                Icons.settings_applications_outlined,
-                                color: Colors.black,
-                                size: 30,
+                      return InkWell(
+                        onTap: () async {
+                          SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
+                          print(
+                              'ตั้งค่าโหมดเป็น: #RT=${_dataModesList[index].configId}\$');
+                          // sendMessage(
+                          //     '#RT=${_dataModesList[index].configId}\$');
+                          sendMessage(
+                              'AT+MODE=${_dataModesList[index].configId}|${index}');
+                          sendUserMode(_dataModesList[index].configId);
+                          //////put api
+                          ///
+                          setState(() {
+                            _Textmode =
+                                _dataModesList[index].configName.toString();
+                            checkedIndex = index;
+                            // prefs.setString(
+                            //     'user_modes', index.toString());
+                          });
+                          print(checkedIndex);
+                        },
+                        child: Card(
+                          elevation: 4,
+                          // color: Colors.green[50],
+                          color: checked ? Colors.green[400] : Colors.white,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(
+                                'Mode',
+                                style: TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w600),
                               ),
-                              label: Text(''),
-                            ),
-                          ],
+                              Text(
+                                '${_dataModesList[index].configName}',
+                                style: TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w600),
+                              ),
+                              // /#RT=user_id,modes_id$
+                              Icon(Icons.settings)
+                            ],
+                          ),
                         ),
                       );
                     }),
