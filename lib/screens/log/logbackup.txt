@@ -1,0 +1,314 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_contron/models/dataday.dart';
+import 'package:flutter_contron/models/datalog.dart';
+import 'package:flutter_contron/models/datalogid.dart';
+
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+
+class LogScreen extends StatefulWidget {
+  const LogScreen({Key? key}) : super(key: key);
+
+  @override
+  _LogScreenState createState() => _LogScreenState();
+}
+
+class Debouncer {
+  final int milliseconds;
+  VoidCallback? action;
+  Timer? _timer;
+
+  Debouncer({required this.milliseconds});
+
+  run(VoidCallback action) {
+    if (null != _timer) {
+      _timer!.cancel();
+    }
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
+}
+
+class _LogScreenState extends State<LogScreen> {
+  final _debouncer = Debouncer(milliseconds: 500);
+  DateTime selectedDate = DateTime.now();
+  DataLog? _datalog;
+  DataDay? _dataDay;
+  String? _myStateDay;
+  List filteredUsers = [];
+  DataLogId? _dataLogId;
+  // String? _myStateDay = _datalog?.message[0].datalogTime;
+  Future<void> getuser() async {
+    String? iduser;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var res = await http.get(Uri.parse(
+        "https://sttslife-api.sttslife.co/datalog/" +
+            prefs.getString('userId').toString()));
+    // var data = json.decode(res.body);
+    try {
+      if (res.statusCode == 200)
+        setState(() {
+          _datalog = dataLogFromJson(res.body);
+          iduser = prefs.getString('userId');
+        });
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  getdataLogId(logId) async {
+    var res = await http
+        .get(Uri.parse('https://sttslife-api.sttslife.co/datalog/1/' + logId));
+
+    try {
+      if (res.statusCode == 200)
+        setState(() {
+          _dataLogId = dataLogIdFromJson(res.body);
+        });
+      print(_dataLogId!.message[0].datalogTime);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getuser();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 30,
+        ),
+        Text(
+          'ข้อมูลย้อนหลัง',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(
+          height: 30,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            padding: EdgeInsets.only(left: 15, right: 15, top: 5),
+            color: Colors.white,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    color: Colors.green[200],
+                    child: DropdownButtonHideUnderline(
+                      child: ButtonTheme(
+                        alignedDropdown: true,
+                        child: DropdownButton<String>(
+                          dropdownColor: Colors.green[50],
+                          borderRadius: BorderRadius.circular(20),
+                          autofocus: true,
+                          iconEnabledColor: Colors.green,
+                          value: _myStateDay,
+                          iconSize: 30,
+                          icon: (null),
+                          style: TextStyle(
+                            color: Colors.black54,
+                            fontSize: 16,
+                          ),
+                          hint: Text(
+                            'เลือกวันที่ข้อมูล',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onChanged: (newValue) {
+                            _debouncer.run(() {
+                              setState(() {
+                                _myStateDay = newValue;
+                                getdataLogId(newValue);
+                                print(_myStateDay);
+                              });
+                            });
+                          },
+                          items: _datalog?.message.map((item) {
+                                return new DropdownMenuItem(
+                                  child: new Text(
+                                    DateFormat('วันที่ ' + 'dd-MM-yyyy' + ' น.')
+                                        .format(item.datalogTime),
+                                  ),
+                                  value: item.datalogId.toString(),
+                                );
+                              }).toList() ??
+                              [],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        //////////////////////////////drop Type //////////////////////////
+
+        SizedBox(
+          height: 20,
+        ),
+        Center(
+          child: Column(
+            children: <Widget>[
+              _datalog?.message.length != null
+                  ? ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount:
+                          _dataLogId != null ? _dataLogId!.message.length : 0,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Container(
+                            height: MediaQuery.of(context).size.height / 4,
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(color: Colors.green[400]!),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.green[400]!.withOpacity(0.4),
+                                    spreadRadius: 4,
+                                    blurRadius: 7,
+                                    offset: Offset(
+                                        0, 3), // changes position of shadow
+                                  ),
+                                ],
+                                borderRadius: new BorderRadius.only(
+                                  topRight: const Radius.circular(30),
+                                  topLeft: const Radius.circular(30),
+                                  bottomLeft: const Radius.circular(30),
+                                  bottomRight: const Radius.circular(30),
+                                )),
+                            child: Column(
+                              children: [
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 30),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'อุณหภูมิเฉลี่ย  ',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF493a3a),
+                                        ),
+                                      ),
+                                      Text(
+                                        '${_dataLogId?.message[0].datalogTempavg}',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF493a3a),
+                                        ),
+                                      ),
+                                      Text(
+                                        ' °C',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF493a3a),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 30),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'จำนวนการทำงาน  ',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF493a3a),
+                                        ),
+                                      ),
+                                      Text(
+                                        '${_dataLogId?.message[0].datalogCount}',
+                                        // '${filteredUsers[0]['datalogCount']}',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF493a3a),
+                                        ),
+                                      ),
+                                      Text(
+                                        '  ครั้ง',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF493a3a),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 30),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        DateFormat('วันที่ ' +
+                                                'dd-MM-yyyy' +
+                                                ' น.')
+                                            .format(_dataLogId != null
+                                                ? _dataLogId!
+                                                    .message[0].datalogTime
+                                                : DateTime.now()),
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF493a3a),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      })
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 120,
+                        ),
+                        Center(
+                          child: SpinKitFadingCircle(
+                            duration: Duration(milliseconds: 2000),
+                            color: Colors.blue,
+                            size: 50.0,
+                          ),
+                        ),
+                      ],
+                    )
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}

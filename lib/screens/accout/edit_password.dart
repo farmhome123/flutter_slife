@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_contron/models/datauserlogin.dart';
 import 'package:flutter_contron/services/api.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -28,6 +29,7 @@ class _EditPasswordState extends State<EditPassword> {
   String? username;
   String? password;
   DataUser? _dataUserres;
+
   String? get _errorTextdefalut {
     final text = _passworddefalutController.value.text;
     if (text.isEmpty) {
@@ -164,223 +166,251 @@ class _EditPasswordState extends State<EditPassword> {
     print('getUserprofile');
   }
 
+  DateTime timeBackPressed = DateTime.now();
   @override
   Widget build(BuildContext context) {
+    Future<bool?>? showWarning(context) async => showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text('Are you sure ?'),
+              content: Text('do you want to exit an App'),
+              actions: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context, false);
+                  },
+                  child: Text('No'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context, true);
+                  },
+                  child: Text('Yes'),
+                ),
+              ],
+            ));
     if (_dataUser != null) {
-      return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          elevation: 1,
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back,
-              color: Colors.green,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ),
-        body: SafeArea(
-          child: Container(
-            padding: EdgeInsets.only(left: 16, top: 25, right: 16),
-            child: GestureDetector(
-              onTap: () {
-                FocusScope.of(context).unfocus();
+      return WillPopScope(
+        onWillPop: () async {
+          final shouldPop = await showWarning(context);
+          return shouldPop ?? false;
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            elevation: 1,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: Colors.green,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
               },
-              child: ListView(
-                children: [
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Text('รหัสผ่าน ${_passwordController!.text}'),
-                  Center(
-                    child: Text(
-                      'เปลี่ยนรหัสผ่าน',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ),
+          body: SafeArea(
+            child: Container(
+              padding: EdgeInsets.only(left: 16, top: 25, right: 16),
+              child: GestureDetector(
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                },
+                child: ListView(
+                  children: [
+                    SizedBox(
+                      height: 10,
                     ),
-                  ),
-                  SizedBox(
-                    height: 35,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 35.0),
-                    child: TextField(
-                      controller: _passworddefalutController,
-                      obscureText: showPassworddefault,
-                      decoration: InputDecoration(
-                          // errorText: _passwordController == _passwordController
-                          //     ? 'รหัสเก่าผิด'
-                          //     : null,
-                          suffixIcon: showPassworddefault
-                              ? IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      showPassworddefault =
-                                          !showPassworddefault;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    Icons.remove_red_eye,
-                                    color: Colors.grey,
-                                  ),
-                                )
-                              : IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      showPassworddefault =
-                                          !showPassworddefault;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    Icons.remove_red_eye_outlined,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                          contentPadding: EdgeInsets.only(bottom: 3),
-                          labelText: 'รหัสผ่านเก่า',
-                          errorText: _errorTextdefalut,
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          hintText: '',
-                          hintStyle: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                          )),
+                    Center(
+                      child: Text(
+                        'เปลี่ยนรหัสผ่าน',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 20),
+                      ),
                     ),
-                  ),
-                  /////รหัสผ่านใหม่//////
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 35.0),
-                    child: TextField(
-                      controller: _newpasswordController,
-                      obscureText: showPasswordnew,
-                      decoration: InputDecoration(
-                          suffixIcon: showPasswordnew
-                              ? IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      showPasswordnew = !showPasswordnew;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    Icons.remove_red_eye,
-                                    color: Colors.grey,
-                                  ),
-                                )
-                              : IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      showPasswordnew = !showPasswordnew;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    Icons.remove_red_eye_outlined,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                          contentPadding: EdgeInsets.only(bottom: 3),
-                          labelText: 'รหัสผ่านใหม่',
-                          errorText: _errorTextnew,
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          hintText: '',
-                          hintStyle: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                          )),
+                    SizedBox(
+                      height: 35,
                     ),
-                  ),
 
-                  ///////ยืนยืนรหัสผ่านใหม่/////////
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 35.0),
-                    child: TextField(
-                      controller: _confirmpasswordController,
-                      obscureText: showPasswordconfrim,
-                      decoration: InputDecoration(
-                          suffixIcon: showPasswordconfrim
-                              ? IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      showPasswordconfrim =
-                                          !showPasswordconfrim;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    Icons.remove_red_eye,
-                                    color: Colors.grey,
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 35.0),
+                      child: TextField(
+                        autofocus: true,
+                        controller: _passworddefalutController,
+                        obscureText: showPassworddefault,
+                        decoration: InputDecoration(
+                            // errorText: _passwordController == _passwordController
+                            //     ? 'รหัสเก่าผิด'
+                            //     : null,
+                            suffixIcon: showPassworddefault
+                                ? IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        showPassworddefault =
+                                            !showPassworddefault;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      Icons.remove_red_eye,
+                                      color: Colors.grey,
+                                    ),
+                                  )
+                                : IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        showPassworddefault =
+                                            !showPassworddefault;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      Icons.remove_red_eye_outlined,
+                                      color: Colors.grey,
+                                    ),
                                   ),
-                                )
-                              : IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      showPasswordconfrim =
-                                          !showPasswordconfrim;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    Icons.remove_red_eye_outlined,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                          contentPadding: EdgeInsets.only(bottom: 3),
-                          labelText: 'ยืนยันรหัสผ่านใหม่',
-                          errorText: _errorTextconfirm,
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          hintText: '',
-                          hintStyle: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                          )),
+                            contentPadding: EdgeInsets.only(bottom: 3),
+                            labelText: 'รหัสผ่านเก่า',
+                            errorText: _errorTextdefalut,
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            hintText: '',
+                            hintStyle: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                            )),
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      OutlineButton(
-                        padding: EdgeInsets.symmetric(horizontal: 30),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text("CANCEL",
+                    /////รหัสผ่านใหม่//////
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 35.0),
+                      child: TextField(
+                        controller: _newpasswordController,
+                        obscureText: showPasswordnew,
+                        decoration: InputDecoration(
+                            suffixIcon: showPasswordnew
+                                ? IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        showPasswordnew = !showPasswordnew;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      Icons.remove_red_eye,
+                                      color: Colors.grey,
+                                    ),
+                                  )
+                                : IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        showPasswordnew = !showPasswordnew;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      Icons.remove_red_eye_outlined,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                            contentPadding: EdgeInsets.only(bottom: 3),
+                            labelText: 'รหัสผ่านใหม่',
+                            errorText: _errorTextnew,
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            hintText: '',
+                            hintStyle: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                            )),
+                      ),
+                    ),
+
+                    ///////ยืนยืนรหัสผ่านใหม่/////////
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 35.0),
+                      child: TextField(
+                        controller: _confirmpasswordController,
+                        obscureText: showPasswordconfrim,
+                        decoration: InputDecoration(
+                            suffixIcon: showPasswordconfrim
+                                ? IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        showPasswordconfrim =
+                                            !showPasswordconfrim;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      Icons.remove_red_eye,
+                                      color: Colors.grey,
+                                    ),
+                                  )
+                                : IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        showPasswordconfrim =
+                                            !showPasswordconfrim;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      Icons.remove_red_eye_outlined,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                            contentPadding: EdgeInsets.only(bottom: 3),
+                            labelText: 'ยืนยันรหัสผ่านใหม่',
+                            errorText: _errorTextconfirm,
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            hintText: '',
+                            hintStyle: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                            )),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        OutlineButton(
+                          padding: EdgeInsets.symmetric(horizontal: 30),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20)),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text("CANCEL",
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  letterSpacing: 2.2,
+                                  color: Colors.black)),
+                        ),
+                        RaisedButton(
+                          onPressed: _validate
+                              ? () {
+                                  editUserData();
+                                  print('edit');
+                                }
+                              : () {
+                                  print('noedit');
+                                },
+                          color: Colors.green,
+                          padding: EdgeInsets.symmetric(horizontal: 50),
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20)),
+                          child: Text(
+                            "SAVE",
                             style: TextStyle(
                                 fontSize: 14,
                                 letterSpacing: 2.2,
-                                color: Colors.black)),
-                      ),
-                      RaisedButton(
-                        onPressed: _validate
-                            ? () {
-                                editUserData();
-                                print('edit');
-                              }
-                            : () {
-                                print('noedit');
-                              },
-                        color: Colors.green,
-                        padding: EdgeInsets.symmetric(horizontal: 50),
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        child: Text(
-                          "SAVE",
-                          style: TextStyle(
-                              fontSize: 14,
-                              letterSpacing: 2.2,
-                              color: Colors.white),
-                        ),
-                      )
-                    ],
-                  )
-                ],
+                                color: Colors.white),
+                          ),
+                        )
+                      ],
+                    )
+                  ],
+                ),
               ),
             ),
           ),

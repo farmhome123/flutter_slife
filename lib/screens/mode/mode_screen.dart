@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_contron/models/datamode.dart';
 import 'package:flutter_contron/models/datasocketio.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart';
@@ -46,13 +47,10 @@ class _ModeScreenState extends State<ModeScreen> {
       // print(json.encode(_dataModes));
       print(_dataModesList);
       getUser(iduser);
-  
     } catch (e) {
       print(e);
     }
   }
-
- 
 
   getUser(id) async {
     var res = await http.get(
@@ -109,7 +107,7 @@ class _ModeScreenState extends State<ModeScreen> {
 
   void initializeSocket() {
     socket = io(
-        'http://dns.komkawila.com:4000/',
+        'http://dns.sttslife.co:4000/',
         OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()
@@ -189,93 +187,134 @@ class _ModeScreenState extends State<ModeScreen> {
     }
   }
 
+  DateTime timeBackPressed = DateTime.now();
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            height: 30,
-          ),
-          Center(
-            child: Text(
-              'Mode ควบคุมการทำงาน',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green[400]),
+    Future<bool?>? showWarning(context) async => showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text('Are you sure ?'),
+              content: Text('do you want to exit an App'),
+              actions: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context, false);
+                  },
+                  child: Text('No'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context, true);
+                  },
+                  child: Text('Yes'),
+                ),
+              ],
+            ));
+    return WillPopScope(
+      // onWillPop: () async {
+      //   final difference = DateTime.now().difference(timeBackPressed);
+      //   final isExitWaring = difference >= Duration(seconds: 2);
+      //   if (isExitWaring) {
+      //     final message = 'Press back again to exit';
+      //     Fluttertoast.showToast(msg: message, fontSize: 18);
+      //     return false;
+      //   } else {
+      //     Fluttertoast.cancel();
+      //     return true;
+      //   }
+      // },
+      onWillPop: () async {
+        final shouldPop = await showWarning(context);
+        return shouldPop ?? false;
+      },
+      child: Container(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              height: 30,
             ),
-          ),
-          SizedBox(
-            height: 15,
-          ),
-          SizedBox(
-            height: 30,
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                height: 150,
-                child: GridView.builder(
-                    itemCount: _dataModesList.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        childAspectRatio: MediaQuery.of(context).size.width /
-                            (MediaQuery.of(context).size.height / 2.4),
-                        crossAxisCount: 2),
-                    itemBuilder: (context, index) {
-                      bool checked = index == checkedIndex;
-                      return InkWell(
-                        onTap: () async {
-                          SharedPreferences prefs =
-                              await SharedPreferences.getInstance();
-                          print(
-                              'ตั้งค่าโหมดเป็น: #RT=${_dataModesList[index].configId}\$');
-                          // sendMessage(
-                          //     '#RT=${_dataModesList[index].configId}\$');
-                          sendMessage(
-                              'AT+MODE=${_dataModesList[index].configId}|${index}');
-                          sendUserMode(_dataModesList[index].configId);
-                          //////put api
-                          ///
-                          setState(() {
-                            _Textmode =
-                                _dataModesList[index].configName.toString();
-                            checkedIndex = index;
-                            // prefs.setString(
-                            //     'user_modes', index.toString());
-                          });
-                          print(checkedIndex);
-                        },
-                        child: Card(
-                          elevation: 4,
-                          // color: Colors.green[50],
-                          color: checked ? Colors.green[400] : Colors.white,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Text(
-                                'Mode',
-                                style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w600),
-                              ),
-                              Text(
-                                '${_dataModesList[index].configName}',
-                                style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w600),
-                              ),
-                              // /#RT=user_id,modes_id$
-                              Icon(Icons.settings)
-                            ],
-                          ),
-                        ),
-                      );
-                    }),
+            Center(
+              child: Text(
+                'Mode ควบคุมการทำงาน',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green[400]),
               ),
             ),
-          ),
-        ],
+            SizedBox(
+              height: 15,
+            ),
+            SizedBox(
+              height: 30,
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  height: 150,
+                  child: GridView.builder(
+                      itemCount: _dataModesList.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          childAspectRatio: MediaQuery.of(context).size.width /
+                              (MediaQuery.of(context).size.height / 2.4),
+                          crossAxisCount: 2),
+                      itemBuilder: (context, index) {
+                        bool checked = index == checkedIndex;
+                        return InkWell(
+                          onTap: () async {
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            print(
+                                'ตั้งค่าโหมดเป็น: #RT=${_dataModesList[index].configId}\$');
+                            // sendMessage(
+                            //     '#RT=${_dataModesList[index].configId}\$');
+                            sendMessage(
+                                'AT+MODE=${_dataModesList[index].configId}|${index}');
+                            sendUserMode(_dataModesList[index].configId);
+                            //////put api
+                            ///
+                            setState(() {
+                              _Textmode =
+                                  _dataModesList[index].configName.toString();
+                              checkedIndex = index;
+                              // prefs.setString(
+                              //     'user_modes', index.toString());
+                            });
+                            print(checkedIndex);
+                          },
+                          child: Card(
+                            elevation: 4,
+                            // color: Colors.green[50],
+                            color: checked ? Colors.green[400] : Colors.white,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Text(
+                                  'Mode',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                Text(
+                                  '${_dataModesList[index].configName}',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                // /#RT=user_id,modes_id$
+                                Icon(Icons.settings)
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
