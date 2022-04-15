@@ -9,9 +9,7 @@ import 'package:flutter_contron/models/user/datastateuser.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:knob_widget/knob_widget.dart';
-import 'package:outlined_text/outlined_text.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:http/http.dart' as http;
@@ -357,7 +355,7 @@ class _DashBoardState extends State<DashBoard> {
             ));
     final Brightness _brightness = Theme.of(context).brightness;
     return WillPopScope(
-      onWillPop: () async {
+        onWillPop: () async {
         final shouldPop = await showWarning(context);
         return shouldPop ?? false;
       },
@@ -395,13 +393,15 @@ class _DashBoardState extends State<DashBoard> {
                 height: 15,
               ),
               Container(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                child: Column(
                   children: [
+                    Image.asset(
+                      'assets/images/iconhome1.png',
+                      fit: BoxFit.fitHeight,
+                      height: 100,
+                    ),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Row(
                           children: [
@@ -409,58 +409,28 @@ class _DashBoardState extends State<DashBoard> {
                                 ? SpinKitFadingCircle(
                                     duration: Duration(milliseconds: 2000),
                                     color: Colors.green[400],
-                                    size: 40.0,
+                                    size: 50.0,
                                   )
-                                : OutlinedText(
-                                    strokes: [
-                                      OutlinedTextStroke(
-                                          width: 8,
-                                          color: Color.fromARGB(
-                                              255, 83, 136, 180)),
-                                    ],
-                                    text: Text(
-                                      '${_datasocket?.temp}',
-
-                                      // style: TextStyle(
-                                      //   color: Colors.green,
-                                      //   fontFamily: 'Facon',
-                                      //   fontSize: 40.0,
-                                      // ),
-                                      style: GoogleFonts.kanit(
-                                        color: Colors.white,
-                                        letterSpacing: 3,
-                                        fontSize: 40.0,
-                                        fontStyle: FontStyle.normal,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                      // style: TextStyle(
-                                      //   fontSize: 40.0,
-                                      //   letterSpacing: -4,
-                                      //   foreground: Paint()
-                                      //     ..strokeWidth = 5
-                                      //     ..color = Colors.green[400]!,
-                                      // ),
+                                : Text(
+                                    '${_datasocket?.temp}',
+                                    style: TextStyle(
+                                      fontSize: 50.0,
+                                      letterSpacing: -4,
+                                      foreground: Paint()
+                                        ..strokeWidth = 5
+                                        ..color = Colors.green[400]!,
                                     ),
                                   ),
-                            SizedBox(
-                              width: 14,
-                            ),
-                            SizedBox(
-                              child: Image.asset(
-                                'assets/images/iconhome1.png',
-                                height: 50,
+                            Text(
+                              ' °C',
+                              style: TextStyle(
+                                fontSize: 50.0,
+                                letterSpacing: -6,
+                                foreground: Paint()
+                                  ..strokeWidth = 5
+                                  ..color = Colors.green[400]!,
                               ),
                             ),
-                            // Text(
-                            //   ' °C',
-                            //   style: TextStyle(
-                            //     fontSize: 40.0,
-                            //     letterSpacing: -6,
-                            //     foreground: Paint()
-                            //       ..strokeWidth = 5
-                            //       ..color = Colors.green[400]!,
-                            //   ),
-                            // ),
                           ],
                         ),
                       ],
@@ -469,7 +439,7 @@ class _DashBoardState extends State<DashBoard> {
                 ),
               ),
               SizedBox(
-                height: 25,
+                height: 30,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -477,7 +447,7 @@ class _DashBoardState extends State<DashBoard> {
                   DecoratedIcon(
                     Icons.lightbulb,
                     color: _setledyellow(),
-                    size: 40.0,
+                    size: 60.0,
                     shadows: [
                       BoxShadow(
                         blurRadius: 42.0,
@@ -492,7 +462,7 @@ class _DashBoardState extends State<DashBoard> {
                   DecoratedIcon(
                     Icons.lightbulb,
                     color: _setledgreen(),
-                    size: 40.0,
+                    size: 60.0,
                     shadows: [
                       BoxShadow(
                         blurRadius: 42.0,
@@ -507,7 +477,7 @@ class _DashBoardState extends State<DashBoard> {
                   DecoratedIcon(
                     Icons.lightbulb,
                     color: _setledred(),
-                    size: 40.0,
+                    size: 60.0,
                     shadows: [
                       BoxShadow(
                         blurRadius: 42.0,
@@ -612,17 +582,14 @@ class _DashBoardState extends State<DashBoard> {
                     children: [
                       Container(
                         decoration: BoxDecoration(
-                            border: Border.all(color: Colors.green, width: 2),
-                            borderRadius: BorderRadius.circular(15)),
+                          border: Border.all(color: Colors.green, width: 2),
+                        ),
                         width: MediaQuery.of(context).size.width / 3.2,
                         child: Column(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Align(
-                                alignment: Alignment.center,
-                                child: Text('NIGHT MODE'),
-                              ),
+                            Align(
+                              alignment: Alignment.topLeft,
+                              child: Text(' NIGHTMODE'),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -664,20 +631,14 @@ class _DashBoardState extends State<DashBoard> {
                       ),
                       Container(
                         decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Colors.green,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(15)),
+                          border: Border.all(color: Colors.green, width: 2),
+                        ),
                         width: MediaQuery.of(context).size.width / 3.2,
                         child: Column(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Align(
-                                alignment: Alignment.center,
-                                child: Text('SLEEP MODE'),
-                              ),
+                            Align(
+                              alignment: Alignment.topLeft,
+                              child: Text(' SLEEPMODE'),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -719,17 +680,14 @@ class _DashBoardState extends State<DashBoard> {
                       ),
                       Container(
                         decoration: BoxDecoration(
-                            border: Border.all(color: Colors.green, width: 2),
-                            borderRadius: BorderRadius.circular(15)),
+                          border: Border.all(color: Colors.green, width: 2),
+                        ),
                         width: MediaQuery.of(context).size.width / 3.2,
                         child: Column(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Align(
-                                alignment: Alignment.center,
-                                child: Text('LOGO'),
-                              ),
+                            Align(
+                              alignment: Alignment.topLeft,
+                              child: Text(' LOGOMODE'),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -863,8 +821,7 @@ class _DashBoardState extends State<DashBoard> {
                       IconButton(
                         onPressed: () {
                           print('ทดสอบระบบ');
-                          // sendMessage('AT+TEST=1');
-                          _showMaterialDialog();
+                          sendMessage('AT+TEST=1');
                         },
                         icon: Icon(Icons.monitor),
                         tooltip: 'ทดสอบระบบ',
@@ -884,89 +841,70 @@ class _DashBoardState extends State<DashBoard> {
               SizedBox(
                 height: 20,
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Container(
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.green, width: 2),
-                      borderRadius: BorderRadius.circular(15)),
-                  child: dataMax?.message?[0].configPulsecount == null
-                      ? SpinKitFadingCircle(
-                          duration: Duration(milliseconds: 2000),
-                          color: Colors.blue,
-                          size: 20.0,
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: SfLinearGauge(
-                            minimum: 0.0,
-                            maximum: _maximum!,
-                            interval: (_maximum! / 10.0),
-                            animateAxis: true,
-                            axisTrackStyle: const LinearAxisTrackStyle(
-                                thickness: 24, color: Colors.green),
-                            orientation: LinearGaugeOrientation.horizontal,
-                            markerPointers: [
-                              LinearWidgetPointer(
-                                value: _valueSlide!,
-                                onChanged: (value1) {
-                                  setState(() {
-                                    _valueSlide = value1;
+              SizedBox(
+                child: dataMax?.message?[0].configPulsecount == null
+                    ? SpinKitFadingCircle(
+                        duration: Duration(milliseconds: 2000),
+                        color: Colors.blue,
+                        size: 20.0,
+                      )
+                    : SfLinearGauge(
+                        minimum: 0.0,
+                        maximum: _maximum!,
+                        animateAxis: true,
+                        axisTrackStyle: const LinearAxisTrackStyle(
+                            thickness: 24, color: Colors.green),
+                        orientation: LinearGaugeOrientation.horizontal,
+                        markerPointers: [
+                          LinearWidgetPointer(
+                            value: _valueSlide!,
+                            onChanged: (value1) {
+                              setState(() {
+                                _valueSlide = value1;
+                              });
+                            },
+                            onChangeEnd: (valueslide) async {
+                              sendMessage(
+                                  'AT+PULSE=${valueslide.toStringAsFixed(0)}');
+                              var res = await http.put(
+                                  Uri.parse(
+                                      'https://sttslife-api.sttslife.co/users/pulse/${iduser}'),
+                                  body: {
+                                    'user_pulseset':
+                                        valueslide.toStringAsFixed(0)
                                   });
-                                },
-                                onChangeEnd: (valueslide) async {
-                                  sendMessage(
-                                      'AT+PULSE=${valueslide.toStringAsFixed(0)}');
-                                  var res = await http.put(
-                                      Uri.parse(
-                                          'https://sttslife-api.sttslife.co/users/pulse/${iduser}'),
-                                      body: {
-                                        'user_pulseset':
-                                            valueslide.toStringAsFixed(0)
-                                      });
-                                  if (res.statusCode == 200) {
-                                    print('put valueSlide Success');
-                                  } else {
-                                    print('error');
-                                  }
-                                },
-                                child: Container(
-                                  width:
-                                      MediaQuery.of(context).size.height * 0.05,
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.08,
-                                  decoration:
-                                      BoxDecoration(shape: BoxShape.circle),
-                                  child: Center(
-                                    child: Column(
-                                      children: [
-                                        OutlinedText(
-                                          strokes: [
-                                            OutlinedTextStroke(
-                                                color: Colors.green, width: 3),
-                                          ],
-                                          text: Text(
-                                            _valueSlide!.toStringAsFixed(0),
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white),
-                                          ),
-                                        ),
-                                        Icon(
-                                          Icons.circle,
-                                          size: 30,
-                                          color: Colors.white,
-                                        ),
-                                      ],
+                              if (res.statusCode == 200) {
+                                print('put valueSlide Success');
+                              } else {
+                                print('error');
+                              }
+                            },
+                            child: Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(shape: BoxShape.circle),
+                              child: Center(
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      _valueSlide!.toStringAsFixed(0),
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black54),
                                     ),
-                                  ),
+                                    Icon(
+                                      Icons.circle,
+                                      size: 20,
+                                      color: Colors.white,
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                ),
+                        ],
+                      ),
               ),
               SizedBox(
                 height: 30,
@@ -976,8 +914,8 @@ class _DashBoardState extends State<DashBoard> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Container(
-                      height: 90,
-                      width: MediaQuery.of(context).size.width / 3,
+                      height: 130,
+                      width: MediaQuery.of(context).size.width / 2.5,
                       child: Card(
                         shape: RoundedRectangleBorder(
                             side: BorderSide(color: Colors.green, width: 2),
@@ -1010,8 +948,8 @@ class _DashBoardState extends State<DashBoard> {
                       ),
                     ),
                     Container(
-                      height: 90,
-                      width: MediaQuery.of(context).size.width / 3,
+                      height: 130,
+                      width: MediaQuery.of(context).size.width / 2.5,
                       child: Card(
                         shape: RoundedRectangleBorder(
                             side: BorderSide(color: Colors.green, width: 2),
@@ -1055,29 +993,5 @@ class _DashBoardState extends State<DashBoard> {
       ),
     );
     // }
-  }
-
-  void _showMaterialDialog() {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('โหมดทดสอบระบบแจ้งเตือน!'),
-            content: Text(
-              'กำลังพัฒนา',
-              textAlign: TextAlign.center,
-            ),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text(
-                  'Close',
-                ),
-              )
-            ],
-          );
-        });
   }
 }
